@@ -1,0 +1,30 @@
+<?php
+return [
+    'login' => [
+        'title' => 'Xush kelibsiz',
+        'subtitle' => 'CloudAPI akkauntingizga kiring',
+        'email' => 'Email',
+        'password' => 'Parol',
+        'remember' => 'Meni eslab qol',
+        'forgot' => 'Parolni unutdingizmi?',
+        'submit' => 'Kirish',
+        'no_account' => "Akkaunt yo'qmi?",
+        'sign_up' => "Ro'yxatdan o'tish",
+        'failed' => "Email yoki parol noto'g'ri",
+    ],
+    'register' => [
+        'title' => 'Akkaunt yarating',
+        'subtitle' => "Bir necha daqiqada 100+ AI modeldan foydalanishni boshlang",
+        'name' => "To'liq ism",
+        'email' => 'Email',
+        'password' => 'Parol',
+        'password_confirm' => 'Parolni tasdiqlang',
+        'referral' => "Referral kod (ixtiyoriy)",
+        'submit' => "Yaratish",
+        'has_account' => 'Allaqachon akkauntingiz bormi?',
+        'sign_in' => 'Kirish',
+        'terms' => "Ro'yxatdan o'tish orqali :terms va :privacy bilan rozisiz",
+        'terms_link' => 'Shartlar',
+        'privacy_link' => 'Maxfiylik',
+    ],
+];

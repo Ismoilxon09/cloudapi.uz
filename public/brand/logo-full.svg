@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CloudAPI Full Logo (mark + wordmark) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 200" fill="currentColor">
+  
+  <!-- Logo mark (scaled down) -->
+  <g transform="translate(0, 40) scale(0.6)">
+    <rect x="0" y="0" width="36" height="36" rx="8"/>
+    <rect x="0" y="82" width="36" height="36" rx="8"/>
+    <rect x="0" y="164" width="36" height="36" rx="8"/>
+    <path d="M 36 18 C 90 18, 110 60, 135 90" stroke="currentColor" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <path d="M 36 182 C 90 182, 110 140, 135 110" stroke="currentColor" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <rect x="36" y="93" width="100" height="14" rx="3"/>
+    <rect x="130" y="65" width="70" height="70" rx="14"/>
+    <line x1="200" y1="100" x2="230" y2="100" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+    <polygon points="225,90 240,100 225,110"/>
+  </g>
+  
+  <!-- Wordmark -->
+  <text x="180" y="120" 
+        font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" 
+        font-size="80" 
+        font-weight="800" 
+        letter-spacing="-0.04em">cloud<tspan font-weight="500" opacity="0.6">api</tspan></text>
+  
+</svg>

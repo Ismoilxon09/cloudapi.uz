@@ -1,0 +1,20 @@
+<?php
+return [
+    'title' => 'Playground',
+    'subtitle' => "Modellar va promptlarni brauzeringizdan to'g'ridan-to'g'ri sinab ko'ring",
+    'settings' => 'Sozlamalar',
+    'model' => 'Model',
+    'temperature' => 'Temperatura',
+    'max_tokens' => 'Maks tokenlar',
+    'system_prompt' => 'Tizim prompt',
+    'optional' => 'ixtiyoriy',
+    'system_placeholder' => 'Siz foydali yordamchisiz...',
+    'est_cost' => 'Taxminiy narx',
+    'clear' => 'Suhbatni tozalash',
+    'empty_chat' => 'Suhbat boshlang',
+    'empty_chat_desc' => "Modelni sinash uchun pastda xabar yozing",
+    'placeholder' => 'Xabaringizni yozing...',
+    'send' => 'Yuborish',
+    'thinking' => "O'ylayapti...",
+    'error' => 'Xatolik',
+];

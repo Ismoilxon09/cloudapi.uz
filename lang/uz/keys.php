@@ -1,0 +1,32 @@
+<?php
+return [
+    'title' => 'API Kalitlar',
+    'subtitle' => 'API kalitlaringiz va limitlarni boshqaring',
+    'new_key' => 'Yangi kalit',
+    'created_success' => 'API kalit yaratildi',
+    'created_warning' => "Kalitni hozir saqlab qoling. Keyin uni qaytadan ko'ra olmaysiz.",
+    'no_keys' => "Hali kalit yo'q",
+    'no_keys_desc' => "So'rov yuborish uchun birinchi kalitingizni yarating",
+    'create' => 'Kalit yaratish',
+    'name' => 'Nomi',
+    'key' => 'Kalit',
+    'balance' => 'Balans',
+    'requests' => "So'rovlar",
+    'last_used' => 'Oxirgi ishlatilgan',
+    'status' => 'Holat',
+    'never' => 'Hech qachon',
+    'create_modal' => [
+        'title' => 'Yangi API kalit yaratish',
+        'name' => 'Kalit nomi',
+        'name_placeholder' => 'masalan, Production app',
+        'help' => "Nima uchun ishlatishni eslash uchun tushunarli nom bering",
+        'cancel' => 'Bekor qilish',
+        'create' => 'Yaratish',
+    ],
+    'actions' => [
+        'revoke' => 'Bekor qilish',
+        'delete' => "O'chirish",
+        'confirm_revoke' => "Bu kalitni bekor qilishga ishonchingiz komilmi? U darhol ishlamay qoladi.",
+        'confirm_delete' => "Bu kalitni butunlay o'chirasizmi?",
+    ],
+];

@@ -1,0 +1,20 @@
+<?php
+return [
+    'title' => 'Playground',
+    'subtitle' => 'Test models and prompts directly from your browser',
+    'settings' => 'Settings',
+    'model' => 'Model',
+    'temperature' => 'Temperature',
+    'max_tokens' => 'Max tokens',
+    'system_prompt' => 'System prompt',
+    'optional' => 'optional',
+    'system_placeholder' => 'You are a helpful assistant...',
+    'est_cost' => 'Estimated cost',
+    'clear' => 'Clear conversation',
+    'empty_chat' => 'Start a conversation',
+    'empty_chat_desc' => 'Type a message below to test the model',
+    'placeholder' => 'Type your message...',
+    'send' => 'Send',
+    'thinking' => 'Thinking...',
+    'error' => 'Error',
+];

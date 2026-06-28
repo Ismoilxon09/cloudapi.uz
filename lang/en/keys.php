@@ -1,0 +1,32 @@
+<?php
+return [
+    'title' => 'API Keys',
+    'subtitle' => 'Manage your API keys and usage limits',
+    'new_key' => 'New API key',
+    'created_success' => 'API key created successfully',
+    'created_warning' => "Save this key now. You won't be able to see it again.",
+    'no_keys' => 'No API keys yet',
+    'no_keys_desc' => 'Create your first API key to start making requests',
+    'create' => 'Create API key',
+    'name' => 'Name',
+    'key' => 'Key',
+    'balance' => 'Balance',
+    'requests' => 'Requests',
+    'last_used' => 'Last used',
+    'status' => 'Status',
+    'never' => 'Never',
+    'create_modal' => [
+        'title' => 'Create new API key',
+        'name' => 'Key name',
+        'name_placeholder' => 'e.g. Production app',
+        'help' => 'Use a descriptive name to remember what this key is for',
+        'cancel' => 'Cancel',
+        'create' => 'Create key',
+    ],
+    'actions' => [
+        'revoke' => 'Revoke',
+        'delete' => 'Delete',
+        'confirm_revoke' => 'Are you sure you want to revoke this key? It will stop working immediately.',
+        'confirm_delete' => 'Permanently delete this key?',
+    ],
+];

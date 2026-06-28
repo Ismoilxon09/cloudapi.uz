@@ -1,0 +1,30 @@
+<?php
+return [
+    'login' => [
+        'title' => 'Welcome back',
+        'subtitle' => 'Sign in to your CloudAPI account',
+        'email' => 'Email',
+        'password' => 'Password',
+        'remember' => 'Remember me',
+        'forgot' => 'Forgot password?',
+        'submit' => 'Sign in',
+        'no_account' => "Don't have an account?",
+        'sign_up' => 'Sign up',
+        'failed' => 'Invalid email or password',
+    ],
+    'register' => [
+        'title' => 'Create your account',
+        'subtitle' => 'Start using 100+ AI models in minutes',
+        'name' => 'Full name',
+        'email' => 'Email',
+        'password' => 'Password',
+        'password_confirm' => 'Confirm password',
+        'referral' => 'Referral code (optional)',
+        'submit' => 'Create account',
+        'has_account' => 'Already have an account?',
+        'sign_in' => 'Sign in',
+        'terms' => 'By signing up you agree to our :terms and :privacy',
+        'terms_link' => 'Terms',
+        'privacy_link' => 'Privacy Policy',
+    ],
+];

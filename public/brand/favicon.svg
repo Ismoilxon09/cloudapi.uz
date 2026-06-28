@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CloudAPI Favicon - White logo only, no background -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200" fill="#FFFFFF">
+  <rect x="0" y="0" width="36" height="36" rx="8"/>
+  <rect x="0" y="82" width="36" height="36" rx="8"/>
+  <rect x="0" y="164" width="36" height="36" rx="8"/>
+  <path d="M 36 18 C 90 18, 110 60, 135 90" stroke="#FFFFFF" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <path d="M 36 182 C 90 182, 110 140, 135 110" stroke="#FFFFFF" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <rect x="36" y="93" width="100" height="14" rx="3"/>
+  <rect x="130" y="65" width="70" height="70" rx="14"/>
+  <line x1="200" y1="100" x2="230" y2="100" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/>
+  <polygon points="225,90 240,100 225,110"/>
+</svg>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\KeyController;
 use App\Http\Controllers\Dashboard\PlaygroundController;
 use App\Http\Controllers\ModelsController;
+use App\Http\Controllers\PromoCodeController;
 use Illuminate\Support\Facades\Route;
 
 // === LANDING ===
@@ -101,6 +102,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', [\App\Http\Controllers\Dashboard\SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings/profile', [\App\Http\Controllers\Dashboard\SettingsController::class, 'updateProfile'])->name('settings.profile');
     Route::post('/settings/password', [\App\Http\Controllers\Dashboard\SettingsController::class, 'updatePassword'])->name('settings.password');
+    Route::post('/promo/redeem', [\App\Http\Controllers\PromoCodeController::class, 'redeem'])
+        ->name('promo.redeem');
+    Route::get('/promo/my-uses', [\App\Http\Controllers\PromoCodeController::class, 'myUses'])
+        ->name('promo.my-uses');
 });
 
 // ==========================================
@@ -161,4 +166,5 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Activity log (admin actions)
     Route::get('/audit', [\App\Http\Controllers\Admin\AuditController::class, 'index'])->name('audit.index');
+
 });

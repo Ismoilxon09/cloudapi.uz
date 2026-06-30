@@ -122,7 +122,7 @@
       </button>
     </form>
   </div>
-
+  
   <!-- Account info -->
   <div class="settings-card">
     <div class="settings-card-title">{{ __('settings.account.title') }}</div>
@@ -147,4 +147,149 @@
   </div>
 </div>
 
+  <!-- Promokod -->
+  <div class="settings-card">
+    <div class="settings-card-title">Promokod ishlatish</div>
+    <div class="settings-card-subtitle">Promokodingiz bormi? Pastdagi maydonga kiriting va GP bonus oling.</div>
+
+    <form id="promoRedeemForm" onsubmit="return redeemPromoCode(event)">
+      @csrf
+      <div class="field">
+        <input
+          type="text"
+          name="code"
+          id="promoCodeInput"
+          class="input"
+          autocomplete="off"
+          maxlength="50"
+          style="text-transform:uppercase;font-family:'JetBrains Mono',monospace;letter-spacing:0.05em;font-weight:600">
+      </div>
+
+      <button type="submit" class="btn btn-primary mt-4" id="promoBtn">
+        <span class="material-icons-round">redeem</span>
+        Olish
+      </button>
+
+      <div id="promoMessage" class="promo-message"></div>
+    </form>
+
+    <div class="promo-hint">
+      <span class="material-icons-round">campaign</span>
+      <div>
+        Promokodlar <a href="https://t.me/cloudapinews" target="_blank">@cloudapinews</a> kanalida e'lon qilinadi.
+        Yangiliklardan xabardor bo'lib turing.
+      </div>
+    </div>
+  </div>
+  
+
+</div> 
+
 @endsection
+@push('scripts')
+<style>
+.promo-message {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  display: none;
+  font-weight: 500;
+}
+.promo-message.show { display: block; }
+.promo-message.success {
+  background: rgba(16, 185, 129, .08);
+  border: 1px solid rgba(16, 185, 129, .2);
+  color: #10B981;
+}
+.promo-message.error {
+  background: rgba(239, 68, 68, .08);
+  border: 1px solid rgba(239, 68, 68, .2);
+  color: #EF4444;
+}
+.promo-hint {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-top: 16px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.promo-hint .material-icons-round {
+  font-size: 18px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+.promo-hint a {
+  color: var(--text-strong);
+  font-weight: 700;
+  text-decoration: none;
+}
+.promo-hint a:hover {
+  text-decoration: underline;
+}
+@keyframes spinAnim {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+async function redeemPromoCode(e) {
+  e.preventDefault();
+  const btn = document.getElementById('promoBtn');
+  const input = document.getElementById('promoCodeInput');
+  const msg = document.getElementById('promoMessage');
+  const code = input.value.trim().toUpperCase();
+
+  if (!code) return false;
+
+  msg.classList.remove('show', 'success', 'error');
+  btn.disabled = true;
+  const originalBtnHtml = btn.innerHTML;
+  btn.innerHTML = '<span class="material-icons-round" style="animation:spinAnim 1s linear infinite">refresh</span> Tekshirilmoqda';
+
+  try {
+    const res = await fetch('{{ route("promo.redeem") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ code })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      throw new Error(data.message || 'Xato yuz berdi');
+    }
+
+    msg.textContent = data.message;
+    msg.classList.add('show', 'success');
+    input.value = '';
+
+    setTimeout(() => { window.location.reload(); }, 2000);
+
+  } catch (err) {
+    msg.textContent = err.message;
+    msg.classList.add('show', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalBtnHtml;
+  }
+
+  return false;
+}
+
+document.getElementById('promoCodeInput')?.addEventListener('input', function(e) {
+  e.target.value = e.target.value.toUpperCase();
+});
+</script>
+@endpush

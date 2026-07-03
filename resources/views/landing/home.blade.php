@@ -494,14 +494,37 @@
   margin: 120px auto;
   max-width: 1100px;
   padding: 80px 48px;
-  background: var(--text-strong);
+  background: #0a0a0a;
   color: white;
   border-radius: 24px;
   text-align: center;
-  position: relative;
   overflow: hidden;
+  border: 1px solid #262626;
 }
 
+[data-theme="dark"] .cta-section {
+  background: #ffffff;
+  color: #0a0a0a;
+  border: 1px solid #262626;
+}
+
+[data-theme="dark"] .cta-section h2 {
+  color: #0a0a0a !important;
+}
+
+[data-theme="dark"] .cta-section p {
+  color: rgba(10, 10, 10, .65) !important;
+}
+
+[data-theme="dark"] .cta-section .btn[style*="background:white"] {
+  background: #0a0a0a !important;
+  color: white !important;
+}
+
+[data-theme="dark"] .cta-section .btn[style*="background:transparent"] {
+  color: #0a0a0a !important;
+  border-color: rgba(10, 10, 10, .2) !important;
+}
 .cta-section::before {
   content: '';
   position: absolute;
@@ -602,6 +625,215 @@
   .steps-line { grid-template-columns: 1fr; }
   .hero-meta { flex-direction: column; gap: 12px; }
 }
+
+/* ============================================================
+   YANGI QO'SHILGAN — enhanced effects + mobile + feedbacks
+============================================================ */
+
+/* Simlarni yashirish (agar bo'lsa) */
+.orbit-svg, .floating-line, .hero-line, .hero-connector,
+.hero-orbit, .orbit-line, .orbit-path, .decorative-line { display: none !important; }
+
+/* Enhanced button shine */
+.btn-primary { position: relative; overflow: hidden; }
+.btn-primary::before {
+  content: ''; position: absolute; top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+  transition: left .6s ease;
+}
+.btn-primary:hover::before { left: 100%; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,0,0,.15); }
+
+/* Enhanced feature cards */
+.feature-card:hover .feature-icon { transform: scale(1.08) rotate(-3deg); }
+.feature-icon { transition: transform .3s ease; }
+
+/* Enhanced hero bg */
+.hero-wrap::before {
+  content: ''; position: absolute; top: -50%; left: -20%;
+  width: 60%; height: 100%;
+  background: radial-gradient(circle, rgba(124,58,237,.04) 0%, transparent 60%);
+  pointer-events: none; z-index: 0;
+  animation: bgFloat1 20s ease-in-out infinite;
+}
+.hero-wrap::after {
+  content: ''; position: absolute; bottom: -50%; right: -20%;
+  width: 60%; height: 100%;
+  background: radial-gradient(circle, rgba(236,72,153,.04) 0%, transparent 60%);
+  pointer-events: none; z-index: 0;
+  animation: bgFloat2 25s ease-in-out infinite;
+}
+@keyframes bgFloat1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(30px,40px); } }
+@keyframes bgFloat2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-40px,-30px); } }
+
+/* ===== FEEDBACKS ===== */
+.feedbacks-section { padding: 100px 32px; background: var(--bg); position: relative; z-index: 2; }
+.feedbacks-container { max-width: 1200px; margin: 0 auto; }
+.feedbacks-header { text-align: center; margin-bottom: 48px; }
+.feedbacks-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; background: var(--bg-subtle);
+  border: 1px solid var(--border); border-radius: 999px;
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  margin-bottom: 16px; text-transform: uppercase; letter-spacing: .05em;
+}
+.feedbacks-badge .material-icons-round { font-size: 16px; }
+.feedbacks-title { font-size: 40px; font-weight: 800; letter-spacing: -.03em; color: var(--text-strong); margin: 0 0 12px; line-height: 1.15; }
+.feedbacks-subtitle { font-size: 16px; color: var(--text-muted); max-width: 560px; margin: 0 auto 24px; line-height: 1.5; }
+.feedbacks-stats { display: flex; gap: 40px; justify-content: center; margin-top: 20px; }
+.feedbacks-stat-value { font-size: 28px; font-weight: 800; color: var(--text-strong); letter-spacing: -.02em; display: flex; align-items: center; justify-content: center; gap: 4px; }
+.feedbacks-stat-label { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+.feedbacks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-bottom: 60px; }
+.feedback-card {
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: 14px; padding: 22px; transition: all .2s;
+  display: flex; flex-direction: column;
+}
+.feedback-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,.08); border-color: var(--border-strong); }
+.feedback-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.feedback-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 15px; flex-shrink: 0;
+}
+.feedback-user { flex: 1; min-width: 0; }
+.feedback-name { font-weight: 700; font-size: 13.5px; color: var(--text-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.feedback-date { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
+.feedback-rating { display: flex; gap: 1px; }
+.feedback-text { font-size: 13.5px; line-height: 1.55; color: var(--text); margin-bottom: 12px; flex: 1; }
+.feedback-reply {
+  padding: 12px 14px; background: var(--bg-subtle);
+  border-left: 3px solid var(--text-strong);
+  border-radius: 0 8px 8px 0; margin-top: 12px;
+}
+.feedback-reply-header { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-bottom: 6px; }
+.feedback-reply-header .material-icons-round { font-size: 14px; }
+.feedback-reply-text { font-size: 12.5px; color: var(--text); line-height: 1.5; font-style: italic; }
+.feedback-cta { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 20px; padding: 40px; text-align: center; margin-top: 40px; }
+.feedback-cta-title { font-size: 26px; font-weight: 800; letter-spacing: -.02em; color: var(--text-strong); margin: 0 0 8px; }
+.feedback-cta-subtitle { color: var(--text-muted); font-size: 14px; margin: 0 auto 24px; max-width: 500px; }
+.feedback-cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.fb-btn { display: inline-flex; align-items: center; gap: 6px; padding: 12px 22px; border-radius: 10px; font-size: 14px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: all .15s; }
+.fb-btn .material-icons-round { font-size: 18px; }
+.fb-btn-primary { background: var(--text-strong); color: var(--bg-elevated); }
+.fb-btn-primary:hover { transform: translateY(-1px); opacity: .92; }
+.fb-btn-secondary { background: var(--bg-subtle); color: var(--text-strong); border: 1px solid var(--border); }
+.fb-btn-secondary:hover { background: var(--bg-elevated); border-color: var(--border-strong); }
+.fb-btn-full { width: 100%; justify-content: center; }
+
+/* Feedback Modal */
+.fb-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.6); z-index: 9999; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+.fb-modal.active { display: flex; animation: fadeIn .2s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.fb-modal-content { background: var(--bg-elevated); border-radius: 16px; padding: 32px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; animation: slideUp .3s ease; }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.fb-modal-close { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border: none; background: var(--bg-subtle); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
+.fb-modal-close:hover { background: var(--border); color: var(--text-strong); }
+.fb-modal-header { margin-bottom: 24px; }
+.fb-modal-header h3 { font-size: 22px; font-weight: 800; color: var(--text-strong); margin: 0 0 6px; letter-spacing: -.02em; }
+.fb-modal-header p { font-size: 13px; color: var(--text-muted); margin: 0; }
+.fb-field { margin-bottom: 18px; }
+.fb-field label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .04em; }
+.fb-input, .fb-textarea { width: 100%; padding: 12px 14px; background: var(--bg-subtle); border: 1.5px solid var(--border); border-radius: 10px; font-size: 14px; color: var(--text-strong); font-family: inherit; transition: all .15s; resize: vertical; }
+.fb-input:focus, .fb-textarea:focus { outline: none; border-color: var(--text-strong); background: var(--bg-elevated); }
+.fb-textarea { min-height: 100px; }
+.fb-char-count { font-size: 11px; color: var(--text-subtle); text-align: right; margin-top: 4px; }
+.rating-input { display: flex; gap: 4px; }
+.rating-star { background: transparent; border: none; cursor: pointer; padding: 4px; transition: transform .15s; }
+.rating-star:hover { transform: scale(1.15); }
+.rating-star .material-icons-round { font-size: 30px; color: var(--border); transition: color .15s; }
+.rating-star.active .material-icons-round { color: #FBBF24; }
+.fb-form-message { display: none; padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; font-weight: 500; }
+.fb-form-message.show { display: block; }
+.fb-form-message.success { background: rgba(16,185,129,.08); border: 1px solid rgba(16,185,129,.2); color: #10B981; }
+.fb-form-message.error { background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.2); color: #EF4444; }
+@keyframes spinAnim { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* ===== MOBILE MENU ===== */
+.nav-mobile-toggle {
+  display: none; background: transparent;
+  border: 1px solid var(--border); border-radius: 8px;
+  width: 40px; height: 40px; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-strong); transition: all .15s;
+}
+.nav-mobile-toggle:hover { background: var(--bg-subtle); }
+.nav-mobile-toggle .material-icons-round { font-size: 22px; }
+.nav-mobile-menu {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--bg); z-index: 9998; padding: 60px 24px 24px; overflow-y: auto;
+}
+.nav-mobile-menu.active { display: block; animation: slideDown .2s ease; }
+@keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.nav-mobile-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 40px; height: 40px; background: transparent;
+  border: 1px solid var(--border); border-radius: 8px;
+  cursor: pointer; color: var(--text-strong);
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-mobile-links { display: flex; flex-direction: column; gap: 4px; margin-bottom: 32px; }
+.nav-mobile-link { padding: 16px 20px; font-size: 16px; font-weight: 600; color: var(--text-strong); text-decoration: none; border-radius: 10px; transition: background .15s; border-bottom: 1px solid var(--border); }
+.nav-mobile-link:hover { background: var(--bg-subtle); }
+.nav-mobile-actions { display: flex; flex-direction: column; gap: 10px; }
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .landing-nav { padding: 0 16px !important; }
+  .landing-nav .nav-links { display: none !important; }
+  .landing-nav .topbar-actions .btn-ghost,
+  .landing-nav .topbar-actions .btn-primary { display: none !important; }
+  .nav-mobile-toggle { display: flex !important; }
+  .hero-wrap { padding: 80px 16px 60px !important; min-height: auto !important; }
+  .hero-title { font-size: clamp(28px, 8vw, 44px) !important; }
+  .hero-subtitle { font-size: 14px !important; }
+  .hero-cta { flex-direction: column; width: 100%; }
+  .hero-cta a { width: 100%; justify-content: center; }
+  .hero-meta { flex-direction: column !important; gap: 12px !important; }
+  .code-preview { margin-top: 40px !important; }
+  .code-content { padding: 16px !important; font-size: 11px !important; }
+  .section { padding: 60px 16px !important; }
+  .section-header { margin-bottom: 40px !important; }
+  .section-title { font-size: clamp(24px, 6vw, 32px) !important; }
+  .section-subtitle { font-size: 14px !important; }
+  .steps-line { grid-template-columns: 1fr !important; }
+  .step-arrow { display: none; }
+  .about-wrap { grid-template-columns: 1fr !important; gap: 32px !important; }
+  .about-content h2 { font-size: 28px !important; }
+  .about-stats { grid-template-columns: repeat(2, 1fr) !important; gap: 16px !important; }
+  .about-stat-num { font-size: 24px !important; }
+  .features-grid { grid-template-columns: 1fr !important; }
+  .feature-card { padding: 22px !important; }
+  .models-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+  .model-card { padding: 14px !important; }
+  .model-name { font-size: 12px !important; }
+  .model-meta { font-size: 10px !important; }
+  .cta-section { padding: 48px 20px !important; margin: 60px 16px !important; }
+  .cta-section h2 { font-size: 26px !important; }
+  .cta-section p { font-size: 14px !important; }
+  .footer { padding: 40px 20px 24px !important; }
+  .footer-inner { grid-template-columns: 1fr !important; gap: 28px !important; }
+  .footer-bottom { flex-direction: column; text-align: center; gap: 12px; }
+
+  .feedbacks-section { padding: 60px 16px !important; }
+  .feedbacks-title { font-size: 26px !important; }
+  .feedbacks-subtitle { font-size: 14px !important; }
+  .feedbacks-stats { gap: 24px; }
+  .feedbacks-stat-value { font-size: 22px !important; }
+  .feedbacks-grid { grid-template-columns: 1fr !important; gap: 14px !important; }
+  .feedback-card { padding: 18px !important; }
+  .feedback-cta { padding: 28px 20px !important; }
+  .feedback-cta-title { font-size: 22px !important; }
+  .feedback-cta-buttons { flex-direction: column; }
+  .fb-btn { justify-content: center; }
+  .fb-modal-content { padding: 24px !important; }
+}
+
+@media (max-width: 480px) {
+  .hero-title { font-size: 26px !important; }
+  .models-grid { grid-template-columns: 1fr !important; }
+  .about-stats { grid-template-columns: 1fr !important; }
+}
 </style>
 @endpush
 
@@ -637,15 +869,41 @@
       <button class="icon-btn" onclick="toggleTheme()"><span class="material-icons-round" id="themeIcon">dark_mode</span></button>
       <a href="{{ route('login') }}" class="btn btn-ghost btn-sm">{{ __('landing.nav.sign_in') }}</a>
       <a href="{{ route('register') }}" class="btn btn-primary btn-sm">{{ __('landing.nav.get_started') }}</a>
+      <button class="nav-mobile-toggle" onclick="openMobileMenu()">
+        <span class="material-icons-round">menu</span>
+      </button>
     </div>
   </div>
 </header>
 @endguest
 
+<!-- MOBILE MENU (768px dan pastki ekranlarda) -->
+<div class="nav-mobile-menu" id="mobileMenu">
+  <button class="nav-mobile-close" onclick="closeMobileMenu()">
+    <span class="material-icons-round">close</span>
+  </button>
+  <div class="nav-mobile-links">
+    <a href="#how" class="nav-mobile-link" onclick="closeMobileMenu()">{{ __('landing.nav.features') }}</a>
+    <a href="#models" class="nav-mobile-link" onclick="closeMobileMenu()">{{ __('landing.nav.models') }}</a>
+    <a href="{{ route('pricing') }}" class="nav-mobile-link">{{ __('landing.nav.pricing') }}</a>
+    <a href="{{ route('docs') }}" class="nav-mobile-link">{{ __('landing.nav.docs') }}</a>
+    <a href="#feedbacks" class="nav-mobile-link" onclick="closeMobileMenu()">Fikrlar</a>
+  </div>
+  <div class="nav-mobile-actions">
+    @auth
+      <a href="{{ route('dashboard') }}" class="btn btn-primary btn-full">Dashboard</a>
+    @else
+      <a href="{{ route('login') }}" class="btn btn-secondary btn-full">{{ __('landing.nav.sign_in') }}</a>
+      <a href="{{ route('register') }}" class="btn btn-primary btn-full">{{ __('landing.nav.get_started') }}</a>
+    @endauth
+  </div>
+</div>
+
+
 <!-- GLOBAL CURSOR EFFECTS (entire page) -->
 <div class="dot-grid"></div>
 <div class="global-fx">
-  <canvas id="wireCanvas"></canvas>
+  <!-- <canvas id="wireCanvas"></canvas> -->
   <canvas id="netCanvas"></canvas>
 </div>
 
@@ -912,6 +1170,135 @@
   </div>
 </section>
 
+
+<!-- ===== FEEDBACKS SECTION ===== -->
+@php
+    $__feedbacks = \App\Models\Feedback::forLanding(12);
+    $__avgRating = $__feedbacks->avg('rating') ?? 5;
+    $__totalCount = \App\Models\Feedback::where('is_published', 1)->whereNotNull('text')->where('text', '!=', '')->count();
+@endphp
+
+<section id="feedbacks" class="feedbacks-section">
+  <div class="feedbacks-container">
+    <div class="feedbacks-header">
+      <div class="feedbacks-badge">
+        <span class="material-icons-round">rate_review</span>
+        Foydalanuvchilar fikri
+      </div>
+      <h2 class="feedbacks-title">Bizga ishonganlar so'zi</h2>
+      <p class="feedbacks-subtitle">Real foydalanuvchilar tomonidan qoldirilgan haqiqiy fikrlar.</p>
+
+      @if($__totalCount > 0)
+      <div class="feedbacks-stats">
+        <div class="feedbacks-stat">
+          <div class="feedbacks-stat-value">
+            {{ number_format($__avgRating, 1) }}
+            <span class="material-icons-round" style="color:#FBBF24;font-size:24px;vertical-align:-4px">star</span>
+          </div>
+          <div class="feedbacks-stat-label">O'rtacha baho</div>
+        </div>
+        <div class="feedbacks-stat">
+          <div class="feedbacks-stat-value">{{ $__totalCount }}+</div>
+          <div class="feedbacks-stat-label">Feedback</div>
+        </div>
+      </div>
+      @endif
+    </div>
+
+    @if($__feedbacks->count() > 0)
+    <div class="feedbacks-grid">
+      @foreach($__feedbacks as $fb)
+      <div class="feedback-card">
+        <div class="feedback-header">
+          <div class="feedback-avatar" style="background: {{ $fb->avatar_color }}">{{ $fb->initial }}</div>
+          <div class="feedback-user">
+            <div class="feedback-name">{{ $fb->display_name }}</div>
+            <div class="feedback-date">{{ $fb->created_at->format('M Y') }}</div>
+          </div>
+          <div class="feedback-rating">
+            @for($i = 1; $i <= 5; $i++)
+              <span class="material-icons-round" style="color: {{ $i <= $fb->rating ? '#FBBF24' : 'var(--border)' }}; font-size: 15px">star</span>
+            @endfor
+          </div>
+        </div>
+        <div class="feedback-text">{{ $fb->text }}</div>
+        @if($fb->admin_reply)
+        <div class="feedback-reply">
+          <div class="feedback-reply-header">
+            <span class="material-icons-round">reply</span>
+            CloudAPI jamoasidan javob
+          </div>
+          <div class="feedback-reply-text">{{ Str::limit($fb->admin_reply, 200) }}</div>
+        </div>
+        @endif
+      </div>
+      @endforeach
+    </div>
+    @endif
+
+    <div class="feedback-cta">
+      <h3 class="feedback-cta-title">Fikringiz biz uchun muhim</h3>
+      <p class="feedback-cta-subtitle">Platforma haqidagi taassurotlaringizni yozing yoki Telegram bot orqali murojaat qiling.</p>
+      <div class="feedback-cta-buttons">
+        <button class="fb-btn fb-btn-primary" onclick="openFeedbackModal()">
+          <span class="material-icons-round">edit</span>
+          Fikr yozish
+        </button>
+        <a href="https://t.me/cloudapiuzbot" target="_blank" class="fb-btn fb-btn-secondary">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="#229ED9">
+            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.643.135-.953l11.566-4.458c.538-.196 1.006.128.832.94z"/>
+          </svg>
+          Telegram orqali
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEEDBACK MODAL -->
+<div class="fb-modal" id="feedbackModal" onclick="if(event.target === this) closeFeedbackModal()">
+  <div class="fb-modal-content">
+    <button class="fb-modal-close" onclick="closeFeedbackModal()">
+      <span class="material-icons-round">close</span>
+    </button>
+    <div class="fb-modal-header">
+      <h3>Fikr yozing</h3>
+      <p>Sizning fikringiz platforma yaxshilanishiga yordam beradi</p>
+    </div>
+    <form id="feedbackForm" onsubmit="return submitFeedback(event)">
+      @csrf
+      @guest
+      <div class="fb-field">
+        <label>Ismingiz</label>
+        <input type="text" name="name" maxlength="100" placeholder="Ismingiz" class="fb-input">
+      </div>
+      @endguest
+      <div class="fb-field">
+        <label>Baho</label>
+        <div class="rating-input">
+          @for($i = 1; $i <= 5; $i++)
+          <button type="button" class="rating-star{{ $i <= 5 ? ' active' : '' }}" data-value="{{ $i }}" onclick="setRating({{ $i }})">
+            <span class="material-icons-round">star</span>
+          </button>
+          @endfor
+          <input type="hidden" name="rating" id="ratingValue" value="5">
+        </div>
+      </div>
+      <div class="fb-field">
+        <label>Fikringiz</label>
+        <textarea name="text" required minlength="5" maxlength="1000" rows="4" placeholder="Platforma haqida nima o'ylaysiz?" class="fb-textarea"></textarea>
+        <div class="fb-char-count"><span id="charCount">0</span>/1000</div>
+      </div>
+      <div class="fb-form-message" id="feedbackMessage"></div>
+      <button type="submit" class="fb-btn fb-btn-primary fb-btn-full" id="feedbackSubmitBtn">
+        <span class="material-icons-round">send</span>
+        Yuborish
+      </button>
+    </form>
+  </div>
+</div>
+
+
 <!-- CTA -->
 <section class="cta-section">
   <h2>{{ __('landing.cta.title') }}</h2>
@@ -1117,8 +1504,8 @@
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   let W, H, nodes = [], mouse = { x: -1000, y: -1000, active: false };
-  const NODE_COUNT = 80;
-  const CONNECT_DIST = 140;
+  const NODE_COUNT = 200;
+  const CONNECT_DIST = 100;
   const dpr = window.devicePixelRatio || 1;
 
   function resize() {
@@ -1293,5 +1680,97 @@ response = client.chat.completions.<span class="fn">create</span>(
 
   document.querySelectorAll('[data-reveal]').forEach(el => observer.observe(el));
 })();
+
+// ===== MOBILE MENU =====
+function openMobileMenu() {
+  document.getElementById('mobileMenu').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeMobileMenu() {
+  document.getElementById('mobileMenu').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// ===== FEEDBACK MODAL =====
+let currentRating = 5;
+function openFeedbackModal() {
+  document.getElementById('feedbackModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  setRating(5);
+}
+function closeFeedbackModal() {
+  document.getElementById('feedbackModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+function setRating(value) {
+  currentRating = value;
+  document.getElementById('ratingValue').value = value;
+  document.querySelectorAll('.rating-star').forEach(star => {
+    const starValue = parseInt(star.dataset.value);
+    star.classList.toggle('active', starValue <= value);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const textarea = document.querySelector('#feedbackForm textarea[name="text"]');
+  const counter = document.getElementById('charCount');
+  if (textarea && counter) {
+    textarea.addEventListener('input', function() {
+      counter.textContent = this.value.length;
+    });
+  }
+});
+
+async function submitFeedback(e) {
+  e.preventDefault();
+  const form = e.target;
+  const btn = document.getElementById('feedbackSubmitBtn');
+  const msg = document.getElementById('feedbackMessage');
+
+  msg.classList.remove('show', 'success', 'error');
+  btn.disabled = true;
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<span class="material-icons-round" style="animation:spinAnim 1s linear infinite">refresh</span> Yuborilmoqda';
+
+  const formData = new FormData(form);
+
+  try {
+    const res = await fetch('{{ route("feedback.store") }}', {
+      method: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        'Accept': 'application/json',
+      },
+      body: formData
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      const errors = data.errors ? Object.values(data.errors).flat().join(', ') : data.message;
+      throw new Error(errors || 'Xato yuz berdi');
+    }
+
+    msg.textContent = data.message;
+    msg.classList.add('show', 'success');
+    form.reset();
+    setRating(5);
+
+    setTimeout(() => {
+      closeFeedbackModal();
+      window.location.reload();
+    }, 1800);
+
+  } catch (err) {
+    msg.textContent = err.message;
+    msg.classList.add('show', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
+  }
+
+  return false;
+}
+
 </script>
 @endpush

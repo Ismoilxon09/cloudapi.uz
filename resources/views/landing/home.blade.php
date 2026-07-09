@@ -861,6 +861,7 @@
     <nav class="nav-links" style="margin-left:48px;flex:1">
       <a href="#how" class="nav-link">{{ __('landing.nav.features') }}</a>
       <a href="#models" class="nav-link">{{ __('landing.nav.models') }}</a>
+      <a href="#chat" class="nav-link">Chat</a>
       <a href="{{ route('pricing') }}" class="nav-link">{{ __('landing.nav.pricing') }}</a>
       <a href="{{ route('docs') }}" class="nav-link">{{ __('landing.nav.docs') }}</a>
     </nav>
@@ -885,6 +886,7 @@
   <div class="nav-mobile-links">
     <a href="#how" class="nav-mobile-link" onclick="closeMobileMenu()">{{ __('landing.nav.features') }}</a>
     <a href="#models" class="nav-mobile-link" onclick="closeMobileMenu()">{{ __('landing.nav.models') }}</a>
+    <a href="#chat" class="nav-mobile-link" onclick="closeMobileMenu()">Chat</a>
     <a href="{{ route('pricing') }}" class="nav-mobile-link">{{ __('landing.nav.pricing') }}</a>
     <a href="{{ route('docs') }}" class="nav-mobile-link">{{ __('landing.nav.docs') }}</a>
     <a href="#feedbacks" class="nav-mobile-link" onclick="closeMobileMenu()">Fikrlar</a>
@@ -1170,6 +1172,52 @@
   </div>
 </section>
 
+
+<!-- ===== CHAT HIGHLIGHT SECTION ===== -->
+@php
+  $__loc = app()->getLocale();
+  $__chat = [
+    'eyebrow'  => $__loc === 'ru' ? 'Новое' : ($__loc === 'en' ? 'New' : 'Yangi'),
+    'subtitle' => $__loc === 'ru'
+        ? '360+ AI моделей в одном месте — текст, код, генерация изображений, музыки и видео.'
+        : ($__loc === 'en'
+            ? '360+ AI models in one place — text, code, image, music and video generation.'
+            : '360+ AI model bitta joyda — matn, kod, rasm, musiqa va video generatsiya.'),
+    'cta'      => $__loc === 'ru' ? 'Открыть чат' : ($__loc === 'en' ? 'Open chat' : 'Chatni ochish'),
+    'caps'     => $__loc === 'ru'
+        ? ['Текст', 'Код', 'Изображения', 'Аудио', 'Видео']
+        : ($__loc === 'en'
+            ? ['Text', 'Code', 'Images', 'Audio', 'Video']
+            : ['Matn', 'Kod', 'Rasm', 'Audio', 'Video']),
+  ];
+@endphp
+<section class="section" id="chat">
+  <div class="section-header">
+    <div class="section-eyebrow">{{ $__chat['eyebrow'] }}</div>
+    <h2 class="section-title">CloudAPI Chat</h2>
+    <p class="section-subtitle">{{ $__chat['subtitle'] }}</p>
+  </div>
+  <div class="chat-promo" data-reveal>
+    <div class="chat-promo-caps">
+      @foreach(['forum' => $__chat['caps'][0], 'code' => $__chat['caps'][1], 'image' => $__chat['caps'][2], 'graphic_eq' => $__chat['caps'][3], 'movie' => $__chat['caps'][4]] as $__ic => $__lbl)
+        <div class="chat-cap"><span class="material-icons-round">{{ $__ic }}</span><span>{{ $__lbl }}</span></div>
+      @endforeach
+    </div>
+    <a href="{{ route('dashboard.chat.index') }}" class="btn btn-primary btn-lg">
+      <span class="material-icons-round" style="font-size:18px;vertical-align:-4px;margin-right:6px">forum</span>{{ $__chat['cta'] }}
+    </a>
+  </div>
+</section>
+<style>
+.chat-promo { max-width: 820px; margin: 0 auto; text-align: center; }
+.chat-promo-caps { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 8px 0 28px; }
+.chat-cap {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 18px; border: 1px solid var(--border); border-radius: 12px;
+  background: var(--bg-elevated); color: var(--text-strong); font-weight: 600; font-size: 14px;
+}
+.chat-cap .material-icons-round { font-size: 20px; color: var(--text-muted); }
+</style>
 
 <!-- ===== FEEDBACKS SECTION ===== -->
 @php

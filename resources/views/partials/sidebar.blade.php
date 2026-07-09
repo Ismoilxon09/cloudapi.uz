@@ -4,6 +4,7 @@ $navGroups = [
         'label' => app()->getLocale() === 'uz' ? 'Asosiy' : (app()->getLocale() === 'ru' ? 'Основное' : 'Main'),
         'items' => [
             ['route' => 'dashboard', 'icon' => 'dashboard', 'label' => __('common.nav.dashboard'), 'pattern' => 'dashboard'],
+            ['route' => 'dashboard.chat.index', 'icon' => 'forum', 'label' => 'Chat', 'pattern' => 'dashboard.chat.*'],
             ['route' => 'models.index', 'icon' => 'memory', 'label' => __('common.nav.models'), 'pattern' => 'models.*'],
             ['route' => 'playground.index', 'icon' => 'play_arrow', 'label' => __('common.nav.playground'), 'pattern' => 'playground.*'],
         ],
@@ -68,7 +69,7 @@ $navGroups = [
   </nav>
 
   <div class="cs-bottom">
-    <a href="https://t.me/coder_nurmatov" target="_blank" class="cs-nav-item" title="{{ __('common.nav.help') }}">
+    <a href="{{ route('dashboard.tickets.index') }}" target="_blank" class="cs-nav-item" title="{{ __('common.nav.help') }}">
       <span class="material-icons-round cs-nav-icon">support_agent</span>
       <span class="cs-nav-text">{{ __('common.nav.help') }}</span>
     </a>

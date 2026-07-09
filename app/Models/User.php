@@ -97,4 +97,8 @@ class User extends Authenticatable
     {
         return $this->status === 'blocked';
     }
+    public function tickets()
+    {
+        return $this->hasMany(\App\Models\Ticket::class);
+    }
 }

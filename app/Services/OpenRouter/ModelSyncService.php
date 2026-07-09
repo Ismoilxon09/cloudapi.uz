@@ -126,14 +126,26 @@ class ModelSyncService
         $desc = strtolower($data['description'] ?? '');
         $combined = "$id $name $desc";
 
+        $arch = $data['architecture'] ?? [];
+        $output = $arch['output_modalities'] ?? [];
+        if (!$output && !empty($arch['modality']) && str_contains($arch['modality'], '->')) {
+            $output = explode('+', explode('->', $arch['modality'])[1]);
+        }
+
+        // Generatsiya modellari (chiqarish modaliteti) — vision'dan ustun
+        if (in_array('image', $output, true)) return 'image';
+        if (in_array('audio', $output, true)) return 'audio';
+        if (in_array('video', $output, true)) return 'video';
+
         // Reasoning models
         if (preg_match('/\b(o1|o3|r1|reasoning|think)\b/', $combined)) {
             return 'reasoning';
         }
 
-        // Vision/multimodal
-        $modality = $data['architecture']['modality'] ?? '';
-        if (str_contains($modality, 'image') || str_contains($combined, 'vision')) {
+        // Vision/multimodal (kirish rasm)
+        $inputModalities = $arch['input_modalities'] ?? [];
+        $modality = $arch['modality'] ?? '';
+        if (in_array('image', $inputModalities, true) || str_contains($modality, 'image') || str_contains($combined, 'vision')) {
             return 'vision';
         }
 

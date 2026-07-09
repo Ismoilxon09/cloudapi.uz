@@ -1,12 +1,14 @@
 @php
 $pendingCount = \App\Models\Transaction::where('type', 'deposit')->where('status', 'pending')->count();
 $unreadNotifs = \App\Models\AdminNotification::whereNull('read_at')->count();
+$openTickets = \App\Models\Ticket::whereIn('status', ['open', 'in_progress'])->count();
 
 $navGroups = [
     [
         'label' => 'Asosiy',
         'items' => [
             ['route' => 'admin.dashboard', 'icon' => 'space_dashboard', 'label' => 'Dashboard', 'pattern' => 'admin.dashboard'],
+            ['route' => 'admin.chat.index', 'icon' => 'forum', 'label' => 'AI Chat', 'pattern' => 'admin.chat.*'],
             ['route' => 'admin.stats.index', 'icon' => 'analytics', 'label' => 'Statistika', 'pattern' => 'admin.stats.*'],
         ],
     ],
@@ -14,6 +16,8 @@ $navGroups = [
         'label' => 'Foydalanuvchilar',
         'items' => [
             ['route' => 'admin.users.index', 'icon' => 'group', 'label' => 'Userlar', 'pattern' => 'admin.users.*'],
+            ['route' => 'admin.tickets.index', 'icon' => 'support_agent', 'label' => 'Ticketlar', 'pattern' => 'admin.tickets.*', 'badge' => $openTickets > 0 ? $openTickets : null],
+            ['route' => 'admin.feedbacks.index', 'icon' => 'rate_review', 'label' => 'Feedbacks', 'pattern' => 'admin.feedbacks.*'],
             ['route' => 'admin.broadcasts.index', 'icon' => 'campaign', 'label' => 'Yuborish', 'pattern' => 'admin.broadcasts.*'],
         ],
     ],

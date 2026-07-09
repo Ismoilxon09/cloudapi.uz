@@ -4,6 +4,8 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Dashboard\BillingController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\KeyController;
+use App\Http\Controllers\Dashboard\TicketController;
+use App\Http\Controllers\Admin\FeedbackController;
 use App\Http\Controllers\Dashboard\PlaygroundController;
 use App\Http\Controllers\ModelsController;
 use App\Http\Controllers\PromoCodeController;
@@ -106,6 +108,29 @@ Route::middleware('auth')->group(function () {
         ->name('promo.redeem');
     Route::get('/promo/my-uses', [\App\Http\Controllers\PromoCodeController::class, 'myUses'])
         ->name('promo.my-uses');
+    
+    // Tickets
+    Route::prefix('dashboard/tickets')->name('dashboard.tickets.')->group(function () {
+        Route::get('/', [TicketController::class, 'index'])->name('index');
+        Route::get('/create', [TicketController::class, 'create'])->name('create');
+        Route::post('/', [TicketController::class, 'store'])->name('store');
+        Route::get('/{ticket}', [TicketController::class, 'show'])->name('show');
+    });
+
+    // Chat
+    Route::prefix('dashboard/chat')->name('dashboard.chat.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Dashboard\ChatController::class, 'index'])->name('index');
+        Route::get('/{sessionId}', [\App\Http\Controllers\Dashboard\ChatController::class, 'show'])->name('show')->whereNumber('sessionId');
+        Route::post('/create', [\App\Http\Controllers\Dashboard\ChatController::class, 'create'])->name('create');
+        Route::post('/send', [\App\Http\Controllers\Dashboard\ChatController::class, 'sendMessage'])->name('send');
+        Route::delete('/{sessionId}', [\App\Http\Controllers\Dashboard\ChatController::class, 'destroy'])->name('destroy');
+        Route::post('/{sessionId}/pin', [\App\Http\Controllers\Dashboard\ChatController::class, 'togglePin'])->name('pin');
+        Route::put('/{sessionId}/title', [\App\Http\Controllers\Dashboard\ChatController::class, 'updateTitle'])->name('title');
+        Route::post('/stream', [\App\Http\Controllers\Dashboard\ChatController::class, 'streamMessage'])->name('stream');
+        Route::post('/{sessionId}/regenerate', [\App\Http\Controllers\Dashboard\ChatController::class, 'regenerate'])->name('regenerate')->whereNumber('sessionId');
+        Route::post('/{sessionId}/edit', [\App\Http\Controllers\Dashboard\ChatController::class, 'editMessage'])->name('edit')->whereNumber('sessionId');
+        Route::put('/{sessionId}/settings', [\App\Http\Controllers\Dashboard\ChatController::class, 'updateSettings'])->name('settings')->whereNumber('sessionId');
+     });
 });
 
 // ==========================================
@@ -114,6 +139,10 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+
+    // AI Chat (dashboard chat, admin konteksti — action endpointlar /dashboard/chat'da)
+    Route::get('/chat', [\App\Http\Controllers\Dashboard\ChatController::class, 'adminIndex'])->name('chat.index');
+    Route::get('/chat/{sessionId}', [\App\Http\Controllers\Dashboard\ChatController::class, 'adminShow'])->name('chat.show')->whereNumber('sessionId');
 
     // Users
     Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
@@ -167,5 +196,25 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Activity log (admin actions)
     Route::get('/audit', [\App\Http\Controllers\Admin\AuditController::class, 'index'])->name('audit.index');
 
+    // Admin tickets
+    Route::prefix('tickets')->name('tickets.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\TicketController::class, 'index'])->name('index');
+        Route::get('/{ticket}', [\App\Http\Controllers\Admin\TicketController::class, 'show'])->name('show');
+        Route::post('/{ticket}/reply', [\App\Http\Controllers\Admin\TicketController::class, 'reply'])->name('reply');
+        Route::post('/{ticket}/close', [\App\Http\Controllers\Admin\TicketController::class, 'close'])->name('close');
+        Route::post('/{ticket}/status', [\App\Http\Controllers\Admin\TicketController::class, 'updateStatus'])->name('status');
+        Route::post('/{ticket}/priority', [\App\Http\Controllers\Admin\TicketController::class, 'updatePriority'])->name('priority');
+        Route::delete('/{ticket}', [\App\Http\Controllers\Admin\TicketController::class, 'destroy'])->name('destroy');
+    });
+
+    // Admin feedbacks
+    Route::prefix('feedbacks')->name('feedbacks.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\FeedbackController::class, 'index'])->name('index');
+        Route::get('/{feedback}', [\App\Http\Controllers\Admin\FeedbackController::class, 'show'])->name('show');
+        Route::post('/{feedback}/reply', [\App\Http\Controllers\Admin\FeedbackController::class, 'reply'])->name('reply');
+        Route::post('/{feedback}/toggle-publish', [\App\Http\Controllers\Admin\FeedbackController::class, 'togglePublish'])->name('toggle-publish');
+        Route::post('/{feedback}/toggle-feature', [\App\Http\Controllers\Admin\FeedbackController::class, 'toggleFeature'])->name('toggle-feature');
+        Route::delete('/{feedback}', [\App\Http\Controllers\Admin\FeedbackController::class, 'destroy'])->name('destroy');
+    });
 });
 Route::post('/feedback', [\App\Http\Controllers\FeedbackController::class, 'store'])->name('feedback.store');

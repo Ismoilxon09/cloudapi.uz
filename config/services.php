@@ -33,6 +33,16 @@ return [
         'base_url' => 'https://api.groq.com/openai/v1',
     ],
 
+    'fal' => [
+        'key' => env('FAL_KEY'),
+        'base_url' => env('FAL_BASE_URL', 'https://queue.fal.run'),
+    ],
+
+    'replicate' => [
+        'key' => env('REPLICATE_API_TOKEN'),
+        'base_url' => env('REPLICATE_BASE_URL', 'https://api.replicate.com/v1'),
+    ],
+
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),

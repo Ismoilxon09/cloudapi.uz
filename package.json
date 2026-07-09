@@ -4,7 +4,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "build:chat": "esbuild resources/js/chat.js --bundle --minify --format=iife --outfile=public/assets/chat.js"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
@@ -16,6 +17,9 @@
     },
     "dependencies": {
         "build": "^0.1.4",
+        "dompurify": "^3.4.11",
+        "highlight.js": "^11.11.1",
+        "marked": "^15.0.12",
         "run": "^1.5.0"
     }
 }

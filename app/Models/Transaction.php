@@ -10,10 +10,18 @@ class Transaction extends Model {
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'wallet_id', 'type', 'status',
-        'amount_uzs', 'balance_after',
-        'payment_method', 'reference', 'meta', 'description',
-    ];
+    'user_id',
+    'wallet_id',      // ← QO'SHING
+    'type',
+    'status',
+    'amount_uzs',
+    'balance_after',  // ← QO'SHING (agar yo'q bo'lsa)
+    'payment_method',
+    'reference',
+    'meta',
+    'description',
+    'metadata',       // ← QO'SHING (agar yo'q bo'lsa)
+];
 
     protected function casts(): array {
         return [

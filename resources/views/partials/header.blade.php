@@ -101,6 +101,7 @@ $languages = [
         <div class="ch-user-avatar">{{ strtoupper(substr($user->name, 0, 1)) }}</div>
       </button>
       <div class="ch-dropdown-menu ch-user-menu">
+        
         <div class="ch-user-header">
           <div class="ch-user-avatar" style="width:36px;height:36px;font-size:14px">{{ strtoupper(substr($user->name, 0, 1)) }}</div>
           <div style="flex:1;min-width:0">

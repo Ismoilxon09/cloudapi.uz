@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>@yield('title', 'Chat') — CloudAPI</title>
+<link rel="icon" type="image/svg+xml" href="{{ asset('brand/favicon.svg') }}">
+<link rel="apple-touch-icon" href="{{ asset('brand/favicon.svg') }}">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

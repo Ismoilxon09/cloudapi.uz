@@ -69,7 +69,7 @@ $navGroups = [
   </nav>
 
   <div class="cs-bottom">
-    <a href="{{ route('dashboard.tickets.index') }}" target="_blank" class="cs-nav-item" title="{{ __('common.nav.help') }}">
+    <a href="{{ route('dashboard.tickets.index') }}" class="cs-nav-item" title="{{ __('common.nav.help') }}">
       <span class="material-icons-round cs-nav-icon">support_agent</span>
       <span class="cs-nav-text">{{ __('common.nav.help') }}</span>
     </a>

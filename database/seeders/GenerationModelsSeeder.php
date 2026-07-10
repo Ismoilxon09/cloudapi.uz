@@ -57,13 +57,16 @@ class GenerationModelsSeeder extends Seeder
 
         // ---- VIDEO (fal.ai + Replicate) — OpenRouter'da yo'q, qo'lda qo'shiladi ----
         $video = [
-            ['model_id' => 'fal-ai/minimax/video-01', 'display_name' => 'MiniMax Hailuo · Video', 'provider' => 'fal', 'price_usd' => 0.50],
-            ['model_id' => 'fal-ai/kling-video/v1.6/standard/text-to-video', 'display_name' => 'Kling 1.6 · Video', 'provider' => 'fal', 'price_usd' => 0.35],
+            ['model_id' => 'fal-ai/minimax/video-01', 'display_name' => 'MiniMax Hailuo · Video', 'provider' => 'fal', 'price_usd' => 0.50, 'image_model_id' => 'fal-ai/minimax/video-01/image-to-video'],
+            ['model_id' => 'fal-ai/kling-video/v1.6/standard/text-to-video', 'display_name' => 'Kling 1.6 · Video', 'provider' => 'fal', 'price_usd' => 0.35, 'image_model_id' => 'fal-ai/kling-video/v1.6/standard/image-to-video'],
             ['model_id' => 'fal-ai/luma-dream-machine', 'display_name' => 'Luma Dream Machine · Video', 'provider' => 'fal', 'price_usd' => 0.50],
             ['model_id' => 'minimax/video-01', 'display_name' => 'MiniMax Video-01 (Replicate)', 'provider' => 'replicate', 'price_usd' => 0.50],
             ['model_id' => 'tencent/hunyuan-video', 'display_name' => 'Hunyuan Video (Replicate)', 'provider' => 'replicate', 'price_usd' => 0.40],
         ];
         foreach ($video as $m) {
+            $meta = ['price_usd' => $m['price_usd'], 'kind' => 'video'];
+            if (!empty($m['image_model_id'])) $meta['image_model_id'] = $m['image_model_id'];
+
             AiModel::updateOrCreate(
                 ['model_id' => $m['model_id']],
                 [
@@ -71,7 +74,7 @@ class GenerationModelsSeeder extends Seeder
                     'display_name' => $m['display_name'],
                     'provider' => $m['provider'],
                     'category' => 'video',
-                    'description' => 'Matndan video generatsiya (' . $m['provider'] . ').',
+                    'description' => 'Matndan/rasmdan video generatsiya (' . $m['provider'] . ').',
                     'cost_input_usd' => 0,
                     'cost_output_usd' => 0,
                     'margin_percent' => 30,
@@ -80,7 +83,7 @@ class GenerationModelsSeeder extends Seeder
                     'is_featured' => true,
                     'supports_streaming' => false,
                     'active' => true,
-                    'metadata' => ['price_usd' => $m['price_usd'], 'kind' => 'video'],
+                    'metadata' => $meta,
                 ]
             );
         }

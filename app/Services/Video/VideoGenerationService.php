@@ -22,7 +22,7 @@ class VideoGenerationService
      * @param  callable  $onProgress  fn(string $statusText): void
      * @return array{success:bool, video_url?:string, cost_usd?:float, error?:string}
      */
-    public function generate(AiModel $model, string $prompt, callable $onProgress): array
+    public function generate(AiModel $model, string $prompt, callable $onProgress, ?string $imageUrl = null): array
     {
         $provider = $this->providerFor($model);
         if (!$provider) {
@@ -32,6 +32,7 @@ class VideoGenerationService
             $label = strtoupper($model->provider);
             return ['success' => false, 'error' => "{$label} API kaliti sozlanmagan (.env)"];
         }
-        return $provider->generate($model, $prompt, [], $onProgress);
+        $options = $imageUrl ? ['image_url' => $imageUrl] : [];
+        return $provider->generate($model, $prompt, $options, $onProgress);
     }
 }

@@ -125,7 +125,8 @@ class ChatOrchestrator
         ]);
 
         if ($model->category === 'video') {
-            $result = $this->streamVideo($session, $user, $model, $wallet, $userContent, $onChunk);
+            $imageUri = $this->firstImageDataUri($prep['user_message']);
+            $result = $this->streamVideo($session, $user, $model, $wallet, $userContent, $onChunk, $imageUri);
         } else {
             $result = $this->streamCompletion(
                 $session, $user, $model, $wallet, $history, $onChunk,
@@ -557,6 +558,22 @@ class ChatOrchestrator
     }
 
     /**
+     * Xabarning birinchi rasm biriktirmasini data URI ko'rinishida qaytaradi (rasm-dan-video uchun).
+     */
+    protected function firstImageDataUri(ChatMessage $message): ?string
+    {
+        foreach ($message->attachments as $att) {
+            if (!str_starts_with($att->mime_type ?? '', 'image')) continue;
+            if (!$att->path || !Storage::disk('public')->exists($att->path)) continue;
+            $bin = Storage::disk('public')->get($att->path);
+            if ($bin !== null && $bin !== '') {
+                return 'data:' . $att->mime_type . ';base64,' . base64_encode($bin);
+            }
+        }
+        return null;
+    }
+
+    /**
      * O'chirilgan xabar uchun session hisoblagichlarini orqaga qaytarish.
      */
     protected function rollbackCounters(ChatSession $session, ChatMessage $m): void
@@ -780,15 +797,15 @@ class ChatOrchestrator
     /**
      * Video generatsiya oqimi (fal/replicate — asinxron, poll bilan).
      */
-    protected function streamVideo(ChatSession $session, User $user, AiModel $model, Wallet $wallet, string $prompt, callable $onChunk): array
+    protected function streamVideo(ChatSession $session, User $user, AiModel $model, Wallet $wallet, string $prompt, callable $onChunk, ?string $imageUrl = null): array
     {
         @set_time_limit(0);
-        $onChunk(['type' => 'video_status', 'status' => 'Video yaratish boshlandi…']);
+        $onChunk(['type' => 'video_status', 'status' => $imageUrl ? 'Rasmdan video yaratilmoqda…' : 'Video yaratish boshlandi…']);
 
         $service = app(\App\Services\Video\VideoGenerationService::class);
         $result = $service->generate($model, $prompt, function ($status) use ($onChunk) {
             $onChunk(['type' => 'video_status', 'status' => $status]);
-        });
+        }, $imageUrl);
 
         if (!($result['success'] ?? false)) {
             $err = $result['error'] ?? 'Video yaratishda xato';

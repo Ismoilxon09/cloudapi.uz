@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
- * fal.ai video generatsiya (queue API).
+ * fal.ai video generatsiya (queue API). Text-to-video va image-to-video.
  * Model id = fal model yo'li, masalan "fal-ai/minimax/video-01".
  */
 class FalVideoProvider implements VideoProvider
@@ -24,13 +24,23 @@ class FalVideoProvider implements VideoProvider
 
         $base = rtrim(config('services.fal.base_url', 'https://queue.fal.run'), '/');
         $meta = $model->metadata ?? [];
-        $input = array_merge(['prompt' => $prompt], $meta['input'] ?? [], $options);
+        $modelPath = $model->model_id;
+
+        $input = array_merge(['prompt' => $prompt], $meta['input'] ?? []);
+
+        // Rasm-dan-video: rasm bo'lsa image_url qo'shamiz va (bo'lsa) image endpoint'ga o'tamiz
+        if (!empty($options['image_url'])) {
+            $input['image_url'] = $options['image_url'];
+            if (!empty($meta['image_model_id'])) {
+                $modelPath = $meta['image_model_id'];
+            }
+        }
 
         try {
             $submit = Http::withHeaders([
                 'Authorization' => "Key {$key}",
                 'Content-Type' => 'application/json',
-            ])->timeout(60)->post("{$base}/{$model->model_id}", $input);
+            ])->timeout(60)->post("{$base}/{$modelPath}", $input);
 
             if (!$submit->successful()) {
                 return ['success' => false, 'error' => 'fal submit: HTTP ' . $submit->status() . ' ' . substr($submit->body(), 0, 200)];
@@ -65,12 +75,10 @@ class FalVideoProvider implements VideoProvider
 
             $res = Http::withHeaders(['Authorization' => "Key {$key}"])->timeout(60)->get($responseUrl);
             $rj = $res->json() ?? [];
-            $videoUrl = $rj['video']['url']
-                ?? ($rj['videos'][0]['url'] ?? null)
-                ?? ($rj['output']['url'] ?? null)
-                ?? (is_string($rj['output'] ?? null) ? $rj['output'] : null);
+
+            $videoUrl = $this->findUrl($rj);
             if (!$videoUrl) {
-                return ['success' => false, 'error' => 'fal: video URL topilmadi'];
+                return ['success' => false, 'error' => 'fal: video URL topilmadi. Javob: ' . substr(json_encode($rj), 0, 300)];
             }
 
             return [
@@ -82,5 +90,27 @@ class FalVideoProvider implements VideoProvider
             Log::error('fal video failed', ['error' => $e->getMessage()]);
             return ['success' => false, 'error' => 'fal: ' . $e->getMessage()];
         }
+    }
+
+    /**
+     * Javob ichidan video URL'ni rekursiv qidiradi (turli struktura uchun mustahkam).
+     */
+    protected function findUrl($data): ?string
+    {
+        $urls = [];
+        $walk = function ($node) use (&$walk, &$urls) {
+            if (is_string($node) && str_starts_with($node, 'http')) {
+                $urls[] = $node;
+            } elseif (is_array($node)) {
+                foreach ($node as $v) $walk($v);
+            }
+        };
+        $walk($data);
+
+        if (!$urls) return null;
+        foreach ($urls as $u) {
+            if (preg_match('#\.(mp4|webm|mov|m4v)(\?|$)#i', $u)) return $u;
+        }
+        return $urls[0];
     }
 }

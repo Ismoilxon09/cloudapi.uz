@@ -597,7 +597,7 @@ function isVisionModel() {
 
 function canAttach() {
   const cat = MODEL_BY_ID[state.model]?.category;
-  return cat === 'vision' || cat === 'image';
+  return cat === 'vision' || cat === 'image' || cat === 'video';
 }
 
 function updateAttachAvailability() {
@@ -615,7 +615,7 @@ function updateComposerHint() {
   const cat = MODEL_BY_ID[state.model]?.category;
   if (cat === 'image') ta.placeholder = "Yaratmoqchi bo'lgan rasmni tasvirlab bering...";
   else if (cat === 'audio') ta.placeholder = "Yaratmoqchi bo'lgan musiqa/audioni tasvirlab bering...";
-  else if (cat === 'video') ta.placeholder = "Yaratmoqchi bo'lgan videoni tasvirlab bering...";
+  else if (cat === 'video') ta.placeholder = "Videoni tasvirlab bering (rasm biriktirib jonlantirsangiz ham bo'ladi)...";
   else ta.placeholder = 'Xabar yozing... (Enter yubor, Shift+Enter yangi qator)';
 }
 

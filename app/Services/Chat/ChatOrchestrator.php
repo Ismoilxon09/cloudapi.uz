@@ -978,11 +978,11 @@ class ChatOrchestrator
                 'amount_uzs' => -$amount,
                 'balance_after' => $newBalance,
                 'description' => "Chat: {$model->display_name} · Session #{$session->id}",
-                'metadata' => json_encode([
+                'meta' => [
                     'session_id' => $session->id,
                     'model_id' => $model->model_id,
                     'source' => 'chat',
-                ]),
+                ],
             ]);
         });
     }

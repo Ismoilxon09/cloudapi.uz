@@ -140,9 +140,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Dashboard
     Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
 
-    // AI Chat (dashboard chat, admin konteksti — action endpointlar /dashboard/chat'da)
-    Route::get('/chat', [\App\Http\Controllers\Dashboard\ChatController::class, 'adminIndex'])->name('chat.index');
-    Route::get('/chat/{sessionId}', [\App\Http\Controllers\Dashboard\ChatController::class, 'adminShow'])->name('chat.show')->whereNumber('sessionId');
+    // AI Chat — barcha foydalanuvchilar chatlarini nazorat (read-only)
+    Route::get('/chat', [\App\Http\Controllers\Admin\ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/{sessionId}', [\App\Http\Controllers\Admin\ChatController::class, 'show'])->name('chat.show')->whereNumber('sessionId');
 
     // Users
     Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');

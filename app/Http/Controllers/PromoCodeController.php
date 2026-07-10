@@ -62,13 +62,14 @@ class PromoCodeController extends Controller
                     $wallet->transactions()->create([
                         'user_id' => $user->id,
                         'type' => 'bonus',
-                        'amount' => $promo->bonus_amount,
+                        'status' => 'completed',
+                        'amount_uzs' => $promo->bonus_amount,
                         'balance_after' => $wallet->bonus_balance_uzs,
                         'description' => "Promokod: {$promo->code}",
-                        'metadata' => json_encode([
+                        'meta' => [
                             'promo_code_id' => $promo->id,
                             'promo_code' => $promo->code,
-                        ]),
+                        ],
                     ]);
                 }
 

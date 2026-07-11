@@ -57,14 +57,17 @@ class GenerationModelsSeeder extends Seeder
 
         // ---- VIDEO (fal.ai + Replicate) — OpenRouter'da yo'q, qo'lda qo'shiladi ----
         $video = [
-            ['model_id' => 'fal-ai/minimax/video-01', 'display_name' => 'MiniMax Hailuo · Video', 'provider' => 'fal', 'price_usd' => 0.50, 'image_model_id' => 'fal-ai/minimax/video-01/image-to-video'],
             ['model_id' => 'fal-ai/kling-video/v1.6/standard/text-to-video', 'display_name' => 'Kling 1.6 · Video', 'provider' => 'fal', 'price_usd' => 0.35, 'image_model_id' => 'fal-ai/kling-video/v1.6/standard/image-to-video'],
             ['model_id' => 'minimax/video-01', 'display_name' => 'MiniMax Video-01 (Replicate)', 'provider' => 'replicate', 'price_usd' => 0.50],
             ['model_id' => 'tencent/hunyuan-video', 'display_name' => 'Hunyuan Video (Replicate)', 'provider' => 'replicate', 'price_usd' => 0.40],
         ];
 
-        // Noto'g'ri / eskirgan model ID'larni o'chirish (fal endpoint mavjud emas)
-        AiModel::whereIn('model_id', ['fal-ai/luma-dream-machine'])->update(['active' => false]);
+        // Noto'g'ri / eskirgan fal model ID'larni o'chirish (endpoint mavjud emas).
+        // To'g'ri ID'larni `php artisan video:probe-fal` bilan aniqlab, keyin qo'shamiz.
+        AiModel::whereIn('model_id', [
+            'fal-ai/luma-dream-machine',
+            'fal-ai/minimax/video-01',
+        ])->update(['active' => false]);
 
         foreach ($video as $m) {
             $meta = ['price_usd' => $m['price_usd'], 'kind' => 'video'];

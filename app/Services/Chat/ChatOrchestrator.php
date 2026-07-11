@@ -800,6 +800,7 @@ class ChatOrchestrator
     protected function streamVideo(ChatSession $session, User $user, AiModel $model, Wallet $wallet, string $prompt, callable $onChunk, ?string $imageUrl = null): array
     {
         @set_time_limit(0);
+        @ignore_user_abort(true); // brauzer uzilsa ham video tugab, saqlansin
         $onChunk(['type' => 'video_status', 'status' => $imageUrl ? 'Rasmdan video yaratilmoqda…' : 'Video yaratish boshlandi…']);
 
         $service = app(\App\Services\Video\VideoGenerationService::class);

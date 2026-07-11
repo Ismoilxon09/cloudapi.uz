@@ -6,26 +6,23 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 
 /**
- * fal.ai video model ID'lari haqiqiyligini tekshiradi.
- * Bo'sh input yuboradi: model ID noto'g'ri bo'lsa "not a valid model ID",
- * to'g'ri bo'lsa validation xatosi (prompt kerak) — ikkalasi ham PULSIZ
- * (job navbatga tushmaydi). Agar navbatga tushsa, darrov bekor qilinadi.
+ * fal.ai video model ID'lari haqiqiyligini tekshiradi — fal OpenAPI sxemasi orqali.
+ * Job YUBORMAYDI (pulsiz): model mavjud bo'lsa sxema qaytadi, bo'lmasa xato.
  *
  *   php artisan video:probe-fal
  */
 class ProbeFalVideoModels extends Command
 {
     protected $signature = 'video:probe-fal';
-    protected $description = 'fal.ai video model ID lari haqiqiyligini tekshiradi (pulsiz)';
+    protected $description = 'fal.ai video model ID lari haqiqiyligini tekshiradi (pulsiz, OpenAPI orqali)';
 
     public function handle(): int
     {
         $key = config('services.fal.key');
         if (!$key) {
-            $this->error('FAL_KEY sozlanmagan (.env). Avval kalitni qo\'shing.');
+            $this->error("FAL_KEY sozlanmagan (.env).");
             return self::FAILURE;
         }
-        $base = rtrim(config('services.fal.base_url', 'https://queue.fal.run'), '/');
 
         $candidates = [
             'fal-ai/minimax/video-01',
@@ -41,44 +38,36 @@ class ProbeFalVideoModels extends Command
             'fal-ai/veo3',
             'fal-ai/veo3/fast',
             'fal-ai/wan/v2.2-a14b/text-to-video',
-            'fal-ai/wan-t2v',
             'fal-ai/pika/v2.2/text-to-video',
             'fal-ai/hunyuan-video',
             'fal-ai/ltx-video',
-            'fal-ai/ltxv-13b-098-distilled',
         ];
 
-        $valid = [];
-        $this->info('fal.ai video modellarini tekshirish...');
+        $this->info('fal.ai modellarni OpenAPI sxemasi orqali tekshirish (job yuborilmaydi)...');
         $this->newLine();
 
+        $valid = [];
         foreach ($candidates as $id) {
             try {
-                $resp = Http::withHeaders(['Authorization' => "Key {$key}"])
-                    ->timeout(20)->post("{$base}/{$id}", []);
-                $body = $resp->body();
-                $status = $resp->status();
+                $r = Http::withHeaders(['Authorization' => "Key {$key}"])
+                    ->timeout(15)
+                    ->get('https://fal.ai/api/openapi/queue/openapi.json', ['endpoint_id' => $id]);
 
-                if (stripos($body, 'not a valid model') !== false) {
-                    $this->line("  <fg=red>✗ INVALID</>  {$id}");
-                } elseif ($status === 200 && ($resp->json()['request_id'] ?? null)) {
-                    $rid = $resp->json()['request_id'];
-                    try {
-                        Http::withHeaders(['Authorization' => "Key {$key}"])
-                            ->put("{$base}/{$id}/requests/{$rid}/cancel");
-                    } catch (\Throwable $e) {
-                    }
-                    $this->line("  <fg=green>✓ VALID</>    {$id}  (navbat bekor qilindi)");
+                $body = $r->body();
+                $isSchema = $r->successful()
+                    && (str_contains($body, '"openapi"') || str_contains($body, '"paths"'))
+                    && stripos($body, 'not a valid') === false;
+
+                if ($isSchema) {
+                    $this->line("  <fg=green>✓ VALID</>    {$id}");
                     $valid[] = $id;
                 } else {
-                    // validation xatosi (422) → model mavjud, faqat input kerak
-                    $this->line("  <fg=green>✓ VALID</>    {$id}  (HTTP {$status})");
-                    $valid[] = $id;
+                    $this->line("  <fg=red>✗ INVALID</>  {$id}  (HTTP {$r->status()})");
                 }
             } catch (\Throwable $e) {
-                $this->line("  <fg=yellow>? ERROR</>    {$id}  " . substr($e->getMessage(), 0, 60));
+                $this->line("  <fg=yellow>? ERROR</>    {$id}  " . substr($e->getMessage(), 0, 50));
             }
-            usleep(200000); // 0.2s
+            usleep(150000);
         }
 
         $this->newLine();
@@ -87,7 +76,7 @@ class ProbeFalVideoModels extends Command
             $this->line("  {$v}");
         }
         $this->newLine();
-        $this->comment('Shu ro\'yxatni yuboring — men aynan shularni katalogga qo\'shaman.');
+        $this->comment("Shu ro'yxatni menga yuboring — aynan shularni katalogga qo'shaman.");
 
         return self::SUCCESS;
     }

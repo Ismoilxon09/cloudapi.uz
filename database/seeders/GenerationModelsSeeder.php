@@ -57,13 +57,18 @@ class GenerationModelsSeeder extends Seeder
 
         // ---- VIDEO (fal.ai + Replicate) — OpenRouter'da yo'q, qo'lda qo'shiladi ----
         $video = [
+            // fal.ai — zamonaviy, aniq endpoint yo'llari (eski qisqa yo'llar deprecatsiya bo'lgan)
+            ['model_id' => 'fal-ai/minimax/hailuo-02/standard/text-to-video', 'display_name' => 'MiniMax Hailuo 02 · Video', 'provider' => 'fal', 'price_usd' => 0.35, 'image_model_id' => 'fal-ai/minimax/hailuo-02/standard/image-to-video'],
+            ['model_id' => 'fal-ai/kling-video/v2.5-turbo/pro/text-to-video', 'display_name' => 'Kling 2.5 Turbo · Video', 'provider' => 'fal', 'price_usd' => 0.45, 'image_model_id' => 'fal-ai/kling-video/v2.5-turbo/pro/image-to-video'],
             ['model_id' => 'fal-ai/kling-video/v1.6/standard/text-to-video', 'display_name' => 'Kling 1.6 · Video', 'provider' => 'fal', 'price_usd' => 0.35, 'image_model_id' => 'fal-ai/kling-video/v1.6/standard/image-to-video'],
+            ['model_id' => 'fal-ai/luma-dream-machine/ray-2', 'display_name' => 'Luma Ray 2 · Video', 'provider' => 'fal', 'price_usd' => 0.50],
+            ['model_id' => 'fal-ai/wan/v2.2-a14b/text-to-video', 'display_name' => 'Wan 2.2 · Video', 'provider' => 'fal', 'price_usd' => 0.40],
+            // Replicate (REPLICATE_API_TOKEN kerak)
             ['model_id' => 'minimax/video-01', 'display_name' => 'MiniMax Video-01 (Replicate)', 'provider' => 'replicate', 'price_usd' => 0.50],
             ['model_id' => 'tencent/hunyuan-video', 'display_name' => 'Hunyuan Video (Replicate)', 'provider' => 'replicate', 'price_usd' => 0.40],
         ];
 
-        // Noto'g'ri / eskirgan fal model ID'larni o'chirish (endpoint mavjud emas).
-        // To'g'ri ID'larni `php artisan video:probe-fal` bilan aniqlab, keyin qo'shamiz.
+        // Eskirgan / deprecatsiya bo'lgan fal yo'llarini o'chirish (natijada "not a valid model ID")
         AiModel::whereIn('model_id', [
             'fal-ai/luma-dream-machine',
             'fal-ai/minimax/video-01',

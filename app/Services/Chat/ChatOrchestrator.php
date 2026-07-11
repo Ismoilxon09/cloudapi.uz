@@ -858,39 +858,44 @@ class ChatOrchestrator
      */
     protected function storeVideoFromUrl(ChatMessage $message, User $user, string $url): ?string
     {
+        // MUHIM: pul yechilgan bo'lsa video ALBATTA ko'rinsin — har doim ChatAttachment
+        // yaratamiz. Yuklab olinsa /storage, bo'lmasa remote fal URL bilan.
+        $storedUrl = $url;   // fallback: remote fal URL (chaladi, vaqtinchalik)
+        $mime = 'video/mp4';
+        $size = 0;
+        $path = null;
+
         try {
             $resp = Http::timeout(300)->get($url);
-            if (!$resp->successful()) return $url;
-
-            $binary = $resp->body();
-            $mime = $resp->header('Content-Type') ?: 'video/mp4';
-            $size = strlen($binary);
-
-            // Haqiqiy video faylimi? (aks holda remote URL'ni qoldiramiz — u chaladi)
-            $head = substr($binary, 0, 16);
-            $looksVideo = str_starts_with($mime, 'video/')
-                || str_contains($head, 'ftyp')                  // mp4/mov
-                || str_starts_with($binary, "\x1A\x45\xDF\xA3"); // webm
-            if ($size < 10000 || !$looksVideo || $size > 100 * 1024 * 1024) {
-                Log::warning('video not stored (invalid/oversize), remote URL ishlatiladi', ['size' => $size, 'mime' => $mime]);
-                return $url;
+            if ($resp->successful()) {
+                $binary = $resp->body();
+                $size = strlen($binary);
+                $ctype = $resp->header('Content-Type') ?: 'video/mp4';
+                if ($size > 5000 && $size < 200 * 1024 * 1024) {
+                    $ext = str_contains($ctype, 'webm') ? 'webm' : 'mp4';
+                    $mime = str_starts_with($ctype, 'video/') ? $ctype : 'video/mp4';
+                    $path = 'chat/' . $user->id . '/' . Str::uuid() . '.' . $ext;
+                    Storage::disk('public')->put($path, $binary);
+                    $storedUrl = '/storage/' . $path;
+                }
             }
+        } catch (\Throwable $e) {
+            Log::warning('video download failed, remote URL bilan saqlanadi', ['error' => $e->getMessage()]);
+        }
 
-            $ext = str_contains($mime, 'webm') ? 'webm' : 'mp4';
-            $finalMime = str_starts_with($mime, 'video/') ? $mime : 'video/mp4';
-            $path = 'chat/' . $user->id . '/' . Str::uuid() . '.' . $ext;
-            Storage::disk('public')->put($path, $binary);
+        try {
             ChatAttachment::create([
                 'message_id' => $message->id, 'user_id' => $user->id, 'type' => 'video',
-                'filename' => basename($path), 'original_name' => 'video.' . $ext,
-                'mime_type' => $finalMime, 'size_bytes' => $size,
-                'path' => $path, 'url' => '/storage/' . $path,
+                'filename' => $path ? basename($path) : 'video.mp4',
+                'original_name' => 'video.mp4',
+                'mime_type' => $mime, 'size_bytes' => $size,
+                'path' => $path ?? '', 'url' => $storedUrl,
             ]);
-            return '/storage/' . $path;
         } catch (\Throwable $e) {
-            Log::error('video store failed', ['error' => $e->getMessage(), 'url' => $url]);
-            return $url;
+            Log::error('video attachment save failed', ['error' => $e->getMessage()]);
         }
+
+        return $storedUrl;
     }
 
     /**

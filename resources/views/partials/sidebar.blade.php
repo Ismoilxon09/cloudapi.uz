@@ -5,6 +5,7 @@ $navGroups = [
         'items' => [
             ['route' => 'dashboard', 'icon' => 'dashboard', 'label' => __('common.nav.dashboard'), 'pattern' => 'dashboard'],
             ['route' => 'dashboard.chat.index', 'icon' => 'forum', 'label' => 'Chat', 'pattern' => 'dashboard.chat.*'],
+            ['route' => 'media.index', 'icon' => 'perm_media', 'label' => 'Kutubxona', 'pattern' => 'media.*'],
             ['route' => 'models.index', 'icon' => 'memory', 'label' => __('common.nav.models'), 'pattern' => 'models.*'],
             ['route' => 'playground.index', 'icon' => 'play_arrow', 'label' => __('common.nav.playground'), 'pattern' => 'playground.*'],
         ],

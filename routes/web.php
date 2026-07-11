@@ -117,6 +117,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/{ticket}', [TicketController::class, 'show'])->name('show');
     });
 
+    // Media kutubxonasi (yaratilgan rasm/video/audio)
+    Route::get('/dashboard/media', [\App\Http\Controllers\Dashboard\MediaController::class, 'index'])->name('media.index');
+
     // Chat
     Route::prefix('dashboard/chat')->name('dashboard.chat.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Dashboard\ChatController::class, 'index'])->name('index');

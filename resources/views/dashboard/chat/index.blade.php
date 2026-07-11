@@ -38,6 +38,11 @@
         <span>{{ $backLabel }}</span>
       </a>
 
+      <a href="{{ route('media.index') }}" class="chat-back-btn">
+        <span class="material-icons-round">perm_media</span>
+        <span>Kutubxona</span>
+      </a>
+
       <button class="chat-new-btn" data-action="new-chat" type="button">
         <span class="material-icons-round">edit_square</span>
         Yangi chat

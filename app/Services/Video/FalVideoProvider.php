@@ -43,7 +43,7 @@ class FalVideoProvider implements VideoProvider
             ])->timeout(60)->post("{$base}/{$modelPath}", $input);
 
             if (!$submit->successful()) {
-                return ['success' => false, 'error' => 'fal submit: HTTP ' . $submit->status() . ' ' . substr($submit->body(), 0, 200)];
+                return ['success' => false, 'error' => $this->humanError($submit->json() ?? [], 'fal: yuborishda xato (HTTP ' . $submit->status() . ')')];
             }
 
             $data = $submit->json();
@@ -78,7 +78,7 @@ class FalVideoProvider implements VideoProvider
 
             $videoUrl = $this->findUrl($rj);
             if (!$videoUrl) {
-                return ['success' => false, 'error' => 'fal: video URL topilmadi. Javob: ' . substr(json_encode($rj), 0, 300)];
+                return ['success' => false, 'error' => $this->humanError($rj, 'fal: video URL topilmadi')];
             }
 
             return [
@@ -112,5 +112,31 @@ class FalVideoProvider implements VideoProvider
             if (preg_match('#\.(mp4|webm|mov|m4v)(\?|$)#i', $u)) return $u;
         }
         return $urls[0];
+    }
+
+    /**
+     * fal xato javobidan tushunarli xabar chiqaradi (validation/detail/error).
+     */
+    protected function humanError(array $rj, string $fallback): string
+    {
+        if (!empty($rj['detail']) && is_array($rj['detail'])) {
+            $msgs = [];
+            foreach ($rj['detail'] as $d) {
+                if (is_array($d) && !empty($d['msg'])) {
+                    $field = is_array($d['loc'] ?? null) ? end($d['loc']) : '';
+                    $msgs[] = trim(($field ? "{$field}: " : '') . $d['msg']);
+                } elseif (is_string($d)) {
+                    $msgs[] = $d;
+                }
+            }
+            if ($msgs) return 'fal: ' . implode('; ', $msgs);
+        }
+        if (!empty($rj['error'])) {
+            return 'fal: ' . (is_string($rj['error']) ? $rj['error'] : json_encode($rj['error']));
+        }
+        if (!empty($rj['message']) && is_string($rj['message'])) {
+            return 'fal: ' . $rj['message'];
+        }
+        return $fallback;
     }
 }

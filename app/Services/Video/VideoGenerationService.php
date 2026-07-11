@@ -32,6 +32,9 @@ class VideoGenerationService
             $label = strtoupper($model->provider);
             return ['success' => false, 'error' => "{$label} API kaliti sozlanmagan (.env)"];
         }
+        // Video promptlari qisqa bo'lishi kerak (Kling ~2500, MiniMax kamroq)
+        $prompt = mb_substr(trim($prompt), 0, 2000);
+
         $options = $imageUrl ? ['image_url' => $imageUrl] : [];
         return $provider->generate($model, $prompt, $options, $onProgress);
     }

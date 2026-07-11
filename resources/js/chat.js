@@ -291,14 +291,14 @@ async function runStream(url, body, assistantMsg, opts = {}) {
           syncTitle(event.session_id, event.title);
         } else if (event.type === 'error') {
           started = true;
-          contentDiv.innerHTML = `<span style="color:var(--danger)">${escapeHtml(event.error)}</span>`;
+          renderError(contentDiv, event.error);
         }
       }
     }
   } catch (e) {
     if (e.name !== 'AbortError') {
       started = true;
-      contentDiv.innerHTML = `<span style="color:var(--danger)">Tarmoq xatosi: ${escapeHtml(e.message)}</span>`;
+      renderError(contentDiv, 'Tarmoq xatosi: ' + e.message);
     }
   } finally {
     if (renderTimer) clearTimeout(renderTimer);
@@ -678,9 +678,16 @@ function appendAssistantVideo(msgEl, url) {
   v.src = url;
   v.className = 'msg-video';
   v.setAttribute('playsinline', '');
+  v.setAttribute('preload', 'metadata');
   wrap.appendChild(v);
   msgEl.querySelector('.msg-content')?.insertAdjacentElement('afterend', wrap);
   autoScroll();
+}
+
+function renderError(el, msg) {
+  el.innerHTML =
+    `<div class="msg-err"><span class="material-icons-round">error_outline</span>` +
+    `<span>${escapeHtml(msg)}</span></div>`;
 }
 
 // ============================================================

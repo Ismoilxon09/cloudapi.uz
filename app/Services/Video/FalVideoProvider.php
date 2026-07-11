@@ -119,6 +119,9 @@ class FalVideoProvider implements VideoProvider
      */
     protected function humanError(array $rj, string $fallback): string
     {
+        if (!empty($rj['detail']) && is_string($rj['detail'])) {
+            return 'fal: ' . $rj['detail'];
+        }
         if (!empty($rj['detail']) && is_array($rj['detail'])) {
             $msgs = [];
             foreach ($rj['detail'] as $d) {

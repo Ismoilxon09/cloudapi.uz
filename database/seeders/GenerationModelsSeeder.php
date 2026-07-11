@@ -59,10 +59,13 @@ class GenerationModelsSeeder extends Seeder
         $video = [
             ['model_id' => 'fal-ai/minimax/video-01', 'display_name' => 'MiniMax Hailuo · Video', 'provider' => 'fal', 'price_usd' => 0.50, 'image_model_id' => 'fal-ai/minimax/video-01/image-to-video'],
             ['model_id' => 'fal-ai/kling-video/v1.6/standard/text-to-video', 'display_name' => 'Kling 1.6 · Video', 'provider' => 'fal', 'price_usd' => 0.35, 'image_model_id' => 'fal-ai/kling-video/v1.6/standard/image-to-video'],
-            ['model_id' => 'fal-ai/luma-dream-machine', 'display_name' => 'Luma Dream Machine · Video', 'provider' => 'fal', 'price_usd' => 0.50],
             ['model_id' => 'minimax/video-01', 'display_name' => 'MiniMax Video-01 (Replicate)', 'provider' => 'replicate', 'price_usd' => 0.50],
             ['model_id' => 'tencent/hunyuan-video', 'display_name' => 'Hunyuan Video (Replicate)', 'provider' => 'replicate', 'price_usd' => 0.40],
         ];
+
+        // Noto'g'ri / eskirgan model ID'larni o'chirish (fal endpoint mavjud emas)
+        AiModel::whereIn('model_id', ['fal-ai/luma-dream-machine'])->update(['active' => false]);
+
         foreach ($video as $m) {
             $meta = ['price_usd' => $m['price_usd'], 'kind' => 'video'];
             if (!empty($m['image_model_id'])) $meta['image_model_id'] = $m['image_model_id'];

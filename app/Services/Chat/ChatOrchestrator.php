@@ -858,23 +858,36 @@ class ChatOrchestrator
     protected function storeVideoFromUrl(ChatMessage $message, User $user, string $url): ?string
     {
         try {
-            $resp = Http::timeout(180)->get($url);
+            $resp = Http::timeout(300)->get($url);
             if (!$resp->successful()) return $url;
+
             $binary = $resp->body();
-            if (strlen($binary) > 100 * 1024 * 1024) return $url;
             $mime = $resp->header('Content-Type') ?: 'video/mp4';
+            $size = strlen($binary);
+
+            // Haqiqiy video faylimi? (aks holda remote URL'ni qoldiramiz — u chaladi)
+            $head = substr($binary, 0, 16);
+            $looksVideo = str_starts_with($mime, 'video/')
+                || str_contains($head, 'ftyp')                  // mp4/mov
+                || str_starts_with($binary, "\x1A\x45\xDF\xA3"); // webm
+            if ($size < 10000 || !$looksVideo || $size > 100 * 1024 * 1024) {
+                Log::warning('video not stored (invalid/oversize), remote URL ishlatiladi', ['size' => $size, 'mime' => $mime]);
+                return $url;
+            }
+
             $ext = str_contains($mime, 'webm') ? 'webm' : 'mp4';
+            $finalMime = str_starts_with($mime, 'video/') ? $mime : 'video/mp4';
             $path = 'chat/' . $user->id . '/' . Str::uuid() . '.' . $ext;
             Storage::disk('public')->put($path, $binary);
             ChatAttachment::create([
                 'message_id' => $message->id, 'user_id' => $user->id, 'type' => 'video',
                 'filename' => basename($path), 'original_name' => 'video.' . $ext,
-                'mime_type' => $mime, 'size_bytes' => strlen($binary),
-                'path' => $path, 'url' => Storage::disk('public')->url($path),
+                'mime_type' => $finalMime, 'size_bytes' => $size,
+                'path' => $path, 'url' => '/storage/' . $path,
             ]);
             return '/storage/' . $path;
         } catch (\Throwable $e) {
-            Log::error('video store failed', ['error' => $e->getMessage()]);
+            Log::error('video store failed', ['error' => $e->getMessage(), 'url' => $url]);
             return $url;
         }
     }

@@ -668,7 +668,7 @@
 @keyframes bgFloat2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-40px,-30px); } }
 
 /* ===== FEEDBACKS ===== */
-.feedbacks-section { padding: 100px 32px; background: var(--bg); position: relative; z-index: 2; }
+.feedbacks-section { padding: 100px 32px; background: transparent; position: relative; z-index: 2; }
 .feedbacks-container { max-width: 1200px; margin: 0 auto; }
 .feedbacks-header { text-align: center; margin-bottom: 48px; }
 .feedbacks-badge {

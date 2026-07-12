@@ -530,6 +530,8 @@ body.has-sidebar .docs-sidebar {
 @media (max-width: 1100px) {
   .docs-page { grid-template-columns: 240px 1fr; }
   .docs-toc { display: none; }
+  /* Login qilingan userда docs-sidebar yashirin bo'lgani uchun kontent to'liq kenglikda */
+  body.has-sidebar .docs-page { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {

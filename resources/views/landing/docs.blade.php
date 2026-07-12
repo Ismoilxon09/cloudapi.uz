@@ -18,8 +18,11 @@
 
 /* When user is logged in, hide docs sidebar (main app sidebar handles navigation) */
 body.has-sidebar .docs-page {
-  grid-template-columns: 1fr 220px;
-  max-width: 1100px;
+  grid-template-columns: minmax(0, 760px) 210px;
+  justify-content: center;
+  gap: 48px;
+  max-width: 100%;
+  padding: 0 32px;
 }
 
 body.has-sidebar .docs-sidebar {
@@ -530,8 +533,8 @@ body.has-sidebar .docs-sidebar {
 @media (max-width: 1100px) {
   .docs-page { grid-template-columns: 240px 1fr; }
   .docs-toc { display: none; }
-  /* Login qilingan userда docs-sidebar yashirin bo'lgani uchun kontent to'liq kenglikda */
-  body.has-sidebar .docs-page { grid-template-columns: 1fr; }
+  /* Login qilingan userда docs-sidebar yashirin — kontent markazda, siqilmasin */
+  body.has-sidebar .docs-page { grid-template-columns: minmax(0, 760px); }
 }
 
 @media (max-width: 768px) {

@@ -286,6 +286,16 @@
         </div>
 
         @unless($isNew)
+        {{-- Sinash — egaga aniq javob/xatoni ko'rsatadi (webhookdagi umumiy xato o'rniga) --}}
+        <div class="side-card" id="agentTest" data-url="{{ route('agents.test', $agent) }}">
+          <div class="section-title" style="margin-bottom:12px;">Sinash</div>
+          <textarea id="agentTestMsg" class="textarea" rows="2" placeholder="Sinov xabari, masalan: Salom"></textarea>
+          <button type="button" id="agentTestBtn" class="btn btn-primary btn-sm w-full" style="margin-top:8px;">
+            <span class="material-icons-round">play_arrow</span> Javobни sinash
+          </button>
+          <div id="agentTestOut" style="margin-top:10px;font-size:12.5px;line-height:1.5;"></div>
+        </div>
+
         <div class="side-card" style="margin-bottom:0;">
           <div class="section-title" style="margin-bottom:12px;">Statistika</div>
           <div class="flex justify-between" style="font-size:13px;padding:6px 0;">
@@ -352,6 +362,39 @@
     var btn = document.getElementById('tgDiagRefresh');
     if (btn) btn.addEventListener('click', load);
     load();
+  }
+
+  // Agent sinovi — egaga aniq javob/xatoni ko'rsatadi
+  var test = document.getElementById('agentTest');
+  if (test) {
+    var tBtn = document.getElementById('agentTestBtn');
+    var tMsg = document.getElementById('agentTestMsg');
+    var tOut = document.getElementById('agentTestOut');
+    var tok = document.querySelector('meta[name=csrf-token]');
+    var escT = function(s){ var d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML; };
+    tBtn.addEventListener('click', function(){
+      var msg = (tMsg.value || '').trim();
+      if (!msg) { tMsg.focus(); return; }
+      tBtn.disabled = true;
+      tOut.innerHTML = '<span style="color:var(--text-subtle)">Yuborilmoqda…</span>';
+      fetch(test.dataset.url, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','X-CSRF-TOKEN': tok ? tok.content : '','X-Requested-With':'XMLHttpRequest'},
+        body: JSON.stringify({message: msg})
+      })
+      .then(function(r){ return r.json().then(function(j){ return {status:r.status, j:j}; }); })
+      .then(function(res){
+        var d = res.j;
+        if (d.success) {
+          tOut.innerHTML = '<div style="padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-subtle);white-space:pre-wrap;">'+escT(d.content)+'</div>'
+            + '<div style="color:var(--text-subtle);margin-top:6px;">'+escT(d.model||'')+' · '+(d.cost_uzs||0)+' so\'m</div>';
+        } else {
+          tOut.innerHTML = '<div class="alert alert-danger" style="margin:0;"><span class="material-icons-round">error_outline</span><div>'+escT(d.error||('HTTP '+res.status))+'</div></div>';
+        }
+      })
+      .catch(function(){ tOut.innerHTML = '<div class="alert alert-danger" style="margin:0;"><span class="material-icons-round">error_outline</span><div>So\'rov yuborilmadi.</div></div>'; })
+      .finally(function(){ tBtn.disabled = false; });
+    });
   }
 })();
 </script>

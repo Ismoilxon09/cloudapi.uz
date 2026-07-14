@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Agent;
 use App\Models\AgentChannel;
+use App\Models\AgentConversation;
 use App\Models\AiModel;
+use App\Services\Agent\AgentRunner;
 use App\Services\Agent\AgentTelegram;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -234,6 +236,37 @@ class AgentController extends Controller
             return back()->withErrors(['bot_token' => 'Webhook o\'rnatilmadi: ' . ($res['description'] ?? 'noma\'lum')]);
         }
         return back()->with('success', 'Webhook qayta o\'rnatildi: ' . $url);
+    }
+
+    /** Egа uchun sinov — agentni to'g'ridan-to'g'ri chaqirib, ANIQ natija/xatoни ko'rsatadi. */
+    public function testAgent(Request $request, Agent $agent, AgentRunner $runner)
+    {
+        $this->authorizeAgent($agent);
+        $request->validate(['message' => 'required|string|max:2000']);
+
+        $conv = AgentConversation::firstOrCreate([
+            'agent_id'         => $agent->id,
+            'channel_type'     => 'test',
+            'external_chat_id' => 'owner-test-' . Auth::id(),
+        ], [
+            'title' => 'Panel sinovi',
+        ]);
+
+        $result = $runner->reply($agent, $conv, (string) $request->input('message'));
+
+        if ($result['success'] ?? false) {
+            return response()->json([
+                'success'  => true,
+                'content'  => $result['content'],
+                'model'    => $result['model'] ?? null,
+                'cost_uzs' => $result['cost_uzs'] ?? 0,
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'error'   => $result['error'] ?? 'error',
+        ]);
     }
 
     protected function webhookUrl(AgentChannel $channel): string

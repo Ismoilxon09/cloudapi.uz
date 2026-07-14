@@ -186,11 +186,25 @@ class AgentRunner
                 $payload['usage'] = ['include' => true];
             }
 
+            // API kaliti yo'qligini aniq aniqlash (config:cache holatida env() null bo'lishi mumkin)
+            $auth = $headers['Authorization'] ?? '';
+            if ($auth === 'Bearer ' || $auth === 'Bearer') {
+                Log::error('AgentRunner: API key missing', ['provider' => $provider]);
+                return ['success' => false, 'error' => "API kaliti sozlanmagan ({$provider}). Server .env va config keshini tekshiring."];
+            }
+
             $response = Http::withHeaders($headers)->timeout(120)->post($url, $payload);
 
             if (!$response->successful()) {
                 $errorData = $response->json() ?? [];
-                return ['success' => false, 'error' => $errorData['error']['message'] ?? "HTTP {$response->status()}"];
+                $msg = $errorData['error']['message'] ?? "HTTP {$response->status()}";
+                Log::warning('AgentRunner upstream error', [
+                    'provider' => $provider,
+                    'model'    => $model->model_id,
+                    'status'   => $response->status(),
+                    'body'     => mb_substr($response->body(), 0, 500),
+                ]);
+                return ['success' => false, 'error' => $msg];
             }
 
             $data = $response->json();

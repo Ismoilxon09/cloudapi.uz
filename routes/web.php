@@ -59,6 +59,11 @@ Route::post('/api/bot/webhook/{secret}', [\App\Http\Controllers\Bot\BotWebhookCo
     ->name('bot.webhook')
     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
+// Agent botlari webhook (foydalanuvchi agentlari, per-agent secret)
+Route::post('/api/agent/webhook/{secret}', [\App\Http\Controllers\Bot\AgentBotWebhookController::class, 'handle'])
+    ->name('agent.webhook')
+    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
 // Email verification (logged in users)
 Route::middleware('auth')->group(function () {
     Route::get('/verify-email', [\App\Http\Controllers\Auth\EmailVerificationController::class, 'show'])->name('verification.notice');
@@ -119,6 +124,19 @@ Route::middleware('auth')->group(function () {
 
     // Media kutubxonasi (yaratilgan rasm/video/audio)
     Route::get('/dashboard/media', [\App\Http\Controllers\Dashboard\MediaController::class, 'index'])->name('media.index');
+
+    // AI Agentlar (builder)
+    Route::prefix('dashboard/agents')->name('agents.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Dashboard\AgentController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Dashboard\AgentController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Dashboard\AgentController::class, 'store'])->name('store');
+        Route::get('/{agent}/edit', [\App\Http\Controllers\Dashboard\AgentController::class, 'edit'])->name('edit');
+        Route::put('/{agent}', [\App\Http\Controllers\Dashboard\AgentController::class, 'update'])->name('update');
+        Route::delete('/{agent}', [\App\Http\Controllers\Dashboard\AgentController::class, 'destroy'])->name('destroy');
+        Route::post('/{agent}/toggle', [\App\Http\Controllers\Dashboard\AgentController::class, 'toggleStatus'])->name('toggle');
+        Route::post('/{agent}/telegram', [\App\Http\Controllers\Dashboard\AgentController::class, 'connectTelegram'])->name('telegram.connect');
+        Route::delete('/{agent}/telegram', [\App\Http\Controllers\Dashboard\AgentController::class, 'disconnectTelegram'])->name('telegram.disconnect');
+    });
 
     // Chat
     Route::prefix('dashboard/chat')->name('dashboard.chat.')->group(function () {

@@ -82,6 +82,11 @@ class User extends Authenticatable
         return $this->hasMany(ProxyUsage::class);
     }
 
+    public function agents(): HasMany
+    {
+        return $this->hasMany(Agent::class);
+    }
+
     // === Helpers ===
     public function isAdmin(): bool
     {

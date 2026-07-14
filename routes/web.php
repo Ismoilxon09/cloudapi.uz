@@ -136,6 +136,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/{agent}/toggle', [\App\Http\Controllers\Dashboard\AgentController::class, 'toggleStatus'])->name('toggle');
         Route::post('/{agent}/telegram', [\App\Http\Controllers\Dashboard\AgentController::class, 'connectTelegram'])->name('telegram.connect');
         Route::delete('/{agent}/telegram', [\App\Http\Controllers\Dashboard\AgentController::class, 'disconnectTelegram'])->name('telegram.disconnect');
+        Route::get('/{agent}/telegram/status', [\App\Http\Controllers\Dashboard\AgentController::class, 'telegramStatus'])->name('telegram.status');
+        Route::post('/{agent}/telegram/reset', [\App\Http\Controllers\Dashboard\AgentController::class, 'resetWebhook'])->name('telegram.reset');
     });
 
     // Chat

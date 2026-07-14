@@ -60,6 +60,12 @@ class AgentTelegram
         return $this->call('deleteWebhook', ['drop_pending_updates' => true]);
     }
 
+    /** Webhook holati — diagnostika (URL, pending, oxirgi xato). */
+    public function getWebhookInfo(): ?array
+    {
+        return $this->call('getWebhookInfo');
+    }
+
     /** Telegram 4096 belgili chegara — xavfsiz bo'laklarga bo'lish. */
     protected function splitText(string $text, int $limit = 4000): array
     {

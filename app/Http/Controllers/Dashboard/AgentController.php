@@ -120,19 +120,23 @@ class AgentController extends Controller
     {
         $this->authorizeAgent($agent);
 
+        // Nusxalashda tushib qolgan bo'sh joy/qatorlarni validatsiyadan OLDIN tozalash
+        $token = trim((string) $request->input('bot_token'));
+        $token = preg_replace('/\s+/', '', $token); // ichki bo'shliqlarni ham
+        $request->merge(['bot_token' => $token]);
+
         $request->validate([
-            'bot_token' => ['required', 'string', 'regex:/^\d{6,}:[\w-]{30,}$/'],
+            'bot_token' => ['required', 'string', 'regex:/^\d{5,}:[A-Za-z0-9_-]{30,}$/'],
         ], [
-            'bot_token.regex' => 'Token formati noto\'g\'ri. @BotFather bergan tokenni to\'liq nusxalang.',
+            'bot_token.regex' => 'Token formati noto\'g\'ri. @BotFather bergan «123456789:AAE...» ko\'rinishidagi tokenni to\'liq nusxalang.',
         ]);
 
-        $token = trim($request->input('bot_token'));
-
-        // Tokenni tekshirish
+        // Tokenni Telegram orqali tekshirish
         $tg = new AgentTelegram($token);
         $me = $tg->getMe();
         if (!($me['ok'] ?? false)) {
-            return back()->withErrors(['bot_token' => 'Token ishlamadi. Telegram bu tokenni rad etdi.']);
+            $desc = $me['description'] ?? 'javob yo\'q (server Telegram API ga chiqa olmadi?)';
+            return back()->withErrors(['bot_token' => 'Telegram tokenni rad etdi: ' . $desc]);
         }
         $bot = $me['result'];
 
@@ -162,23 +166,90 @@ class AgentController extends Controller
         $channel->agent()->associate($agent);
         $channel->save();
 
-        // Webhookni o'rnatish (public URL kerak)
-        $webhookUrl = rtrim(config('app.url'), '/') . '/api/agent/webhook/' . $channel->webhook_secret;
+        // Webhookni o'rnatish (public https URL kerak)
+        $webhookUrl = $this->webhookUrl($channel);
         $isLocal = str_contains($webhookUrl, 'localhost') || str_contains($webhookUrl, '127.0.0.1');
+        $isHttps = str_starts_with($webhookUrl, 'https://');
 
-        if ($isLocal) {
+        if ($isLocal || !$isHttps) {
             $agent->update(['status' => 'active']);
-            return back()->with('warning', "Bot ulandi (@{$bot['username']}), lekin APP_URL localhost — webhook o'rnatilmadi. Ishlab chiqarishda (public https) avtomatik ishlaydi.");
+            return back()->with('warning', "Bot ulandi (@{$bot['username']}), lekin APP_URL public https emas ({$webhookUrl}) — webhook o'rnatilmadi. .env dagi APP_URL ni to'g'ri public https manzilga qo'ying.");
         }
 
         $res = $tg->setWebhook($webhookUrl, $channel->webhook_secret);
+        $this->storeWebhookResult($channel, $res, $webhookUrl);
+
         if (!($res['ok'] ?? false)) {
-            return back()->withErrors(['bot_token' => 'Webhook o\'rnatilmadi: ' . ($res['description'] ?? 'nomalum xato')]);
+            return back()->withErrors(['bot_token' => 'Bot topildi, lekin webhook o\'rnatilmadi: ' . ($res['description'] ?? 'noma\'lum xato') . ' (URL: ' . $webhookUrl . ')']);
         }
 
         $agent->update(['status' => 'active']);
 
         return back()->with('success', "Bot ulandi: @{$bot['username']}. Agent faol!");
+    }
+
+    /** Telegram webhook holati (diagnostika) — JSON. */
+    public function telegramStatus(Agent $agent)
+    {
+        $this->authorizeAgent($agent);
+        $ch = $agent->telegramChannel;
+        if (!$ch || !($token = $ch->getTelegramToken())) {
+            return response()->json(['connected' => false]);
+        }
+
+        $expected = $this->webhookUrl($ch);
+        $info = (new AgentTelegram($token))->getWebhookInfo();
+        $r = $info['result'] ?? [];
+
+        return response()->json([
+            'connected'    => true,
+            'bot'          => '@' . ($ch->config['bot_username'] ?? ''),
+            'expected_url' => $expected,
+            'current_url'  => $r['url'] ?? '',
+            'match'        => ($r['url'] ?? null) === $expected,
+            'pending'      => $r['pending_update_count'] ?? 0,
+            'last_error'   => $r['last_error_message'] ?? null,
+            'last_error_at'=> isset($r['last_error_date']) ? date('Y-m-d H:i', $r['last_error_date']) : null,
+        ]);
+    }
+
+    /** Webhookni qayta o'rnatish. */
+    public function resetWebhook(Agent $agent)
+    {
+        $this->authorizeAgent($agent);
+        $ch = $agent->telegramChannel;
+        if (!$ch || !($token = $ch->getTelegramToken())) {
+            return back()->withErrors(['bot_token' => 'Avval botni ulang.']);
+        }
+
+        $url = $this->webhookUrl($ch);
+        if (!str_starts_with($url, 'https://') || str_contains($url, 'localhost')) {
+            return back()->withErrors(['bot_token' => "APP_URL public https emas: {$url}"]);
+        }
+
+        $res = (new AgentTelegram($token))->setWebhook($url, $ch->webhook_secret);
+        $this->storeWebhookResult($ch, $res, $url);
+
+        if (!($res['ok'] ?? false)) {
+            return back()->withErrors(['bot_token' => 'Webhook o\'rnatilmadi: ' . ($res['description'] ?? 'noma\'lum')]);
+        }
+        return back()->with('success', 'Webhook qayta o\'rnatildi: ' . $url);
+    }
+
+    protected function webhookUrl(AgentChannel $channel): string
+    {
+        return rtrim(config('app.url'), '/') . '/api/agent/webhook/' . $channel->webhook_secret;
+    }
+
+    protected function storeWebhookResult(AgentChannel $channel, ?array $res, string $url): void
+    {
+        $channel->config = array_merge($channel->config ?? [], [
+            'webhook_url'      => $url,
+            'webhook_ok'       => (bool) ($res['ok'] ?? false),
+            'webhook_error'    => ($res['ok'] ?? false) ? null : ($res['description'] ?? 'noma\'lum'),
+            'webhook_set_at'   => now()->toDateTimeString(),
+        ]);
+        $channel->save();
     }
 
     /** Telegram botni uzish. */

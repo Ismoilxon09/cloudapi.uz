@@ -98,14 +98,13 @@
       <div>{{ $errors->first() }}</div></div>
   @endif
 
-  <form method="POST" action="{{ $isNew ? route('agents.store') : route('agents.update', $agent) }}">
-    @csrf
-    @unless($isNew) @method('PUT') @endunless
+  <div class="builder-grid">
 
-    <div class="builder-grid">
-
-      {{-- LEFT: config --}}
-      <div>
+      {{-- LEFT: config — asosiy saqlash formasi = chap ustun. Kanal formalari
+           nested <form> bo'lib qolmasligi uchun o'ng ustun bu formadan TASHQARIDA. --}}
+      <form method="POST" action="{{ $isNew ? route('agents.store') : route('agents.update', $agent) }}">
+        @csrf
+        @unless($isNew) @method('PUT') @endunless
         {{-- Identity --}}
         <div class="section-card">
           <div class="section-title">Asosiy</div>
@@ -224,9 +223,9 @@
             <span class="material-icons-round">check</span> {{ $isNew ? 'Yaratish' : 'Saqlash' }}
           </button>
         </div>
-      </div>
+      </form>
 
-      {{-- RIGHT: channels --}}
+      {{-- RIGHT: channels — asosiy formadan TASHQARIDA (o'z formalari nested emas) --}}
       <div>
         <div class="side-card">
           <div class="section-title" style="margin-bottom:14px;">Telegram</div>
@@ -253,6 +252,24 @@
               @csrf @method('DELETE')
               <button class="btn btn-ghost w-full"><span class="material-icons-round">link_off</span> Uzish</button>
             </form>
+
+            {{-- Webhook diagnostika --}}
+            <div id="tgDiag" data-url="{{ route('agents.telegram.status', $agent) }}"
+                 style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+              <div class="flex justify-between items-center" style="margin-bottom:8px;">
+                <span class="section-title" style="margin:0;">Webhook holati</span>
+                <button type="button" id="tgDiagRefresh" class="btn btn-ghost btn-sm" title="Yangilash">
+                  <span class="material-icons-round">refresh</span>
+                </button>
+              </div>
+              <div id="tgDiagBody" class="text-muted" style="font-size:12px;">Tekshirilmoqda…</div>
+              <form method="POST" action="{{ route('agents.telegram.reset', $agent) }}" style="margin-top:10px;">
+                @csrf
+                <button class="btn btn-secondary btn-sm w-full">
+                  <span class="material-icons-round">sync</span> Webhookni qayta o'rnatish
+                </button>
+              </form>
+            </div>
           @else
             <div class="text-muted" style="font-size:12.5px;line-height:1.6;margin-bottom:14px;">
               <b>@BotFather</b> orqali bot yarating, <code>/newbot</code> buyrug'i bergan tokenni bu yerga joylashtiring.
@@ -285,7 +302,6 @@
       </div>
 
     </div>
-  </form>
 </div>
 @endsection
 
@@ -304,6 +320,39 @@
   var range = document.querySelector('input[name=temperature]');
   var val = document.getElementById('tempVal');
   if (range && val) range.addEventListener('input', function(){ val.textContent = this.value; });
+
+  // Telegram webhook diagnostika
+  var diag = document.getElementById('tgDiag');
+  if (diag) {
+    var body = document.getElementById('tgDiagBody');
+    var esc = function(s){ var d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML; };
+    var row = function(label, value, ok){
+      var color = ok===true ? 'var(--success)' : (ok===false ? 'var(--danger)' : 'var(--text)');
+      return '<div style="display:flex;justify-content:space-between;gap:10px;padding:4px 0;">'
+        + '<span style="color:var(--text-subtle)">'+label+'</span>'
+        + '<span style="color:'+color+';text-align:right;word-break:break-all;max-width:190px;">'+value+'</span></div>';
+    };
+    var load = function(){
+      body.textContent = 'Tekshirilmoqda…';
+      fetch(diag.dataset.url, {headers:{'X-Requested-With':'XMLHttpRequest'}})
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if (!d.connected) { body.textContent = 'Ulanmagan.'; return; }
+          var html = '';
+          html += row('Manzil mos', d.match ? 'Ha' : 'Yo\'q', d.match);
+          if (!d.match && d.current_url) html += row('Hozirgi URL', esc(d.current_url), false);
+          html += row('Kutilayotgan', esc(d.expected_url), null);
+          html += row('Navbatda', d.pending, d.pending>0?false:true);
+          if (d.last_error) html += row('Oxirgi xato', esc(d.last_error)+(d.last_error_at?(' · '+esc(d.last_error_at)):''), false);
+          else html += row('Xato', 'Yo\'q', true);
+          body.innerHTML = html;
+        })
+        .catch(function(){ body.textContent = 'Holatni olishda xato.'; });
+    };
+    var btn = document.getElementById('tgDiagRefresh');
+    if (btn) btn.addEventListener('click', load);
+    load();
+  }
 })();
 </script>
 @endpush

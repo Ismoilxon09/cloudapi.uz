@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Agent;
 use App\Models\AgentChannel;
 use App\Models\AgentConversation;
+use App\Models\AgentMcpServer;
 use App\Models\AiModel;
 use App\Services\Agent\AgentRunner;
 use App\Services\Agent\AgentTelegram;
+use App\Services\Agent\Mcp\McpClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -70,7 +72,7 @@ class AgentController extends Controller
         $this->authorizeAgent($agent);
 
         return view('dashboard.agents.edit', [
-            'agent'  => $agent->load('telegramChannel'),
+            'agent'  => $agent->load('telegramChannel', 'mcpServers'),
             'models' => $this->modelOptions(),
             'isNew'  => false,
         ]);
@@ -267,6 +269,105 @@ class AgentController extends Controller
             'success' => false,
             'error'   => $result['error'] ?? 'error',
         ]);
+    }
+
+    // === MCP serverlar ===
+
+    public function addMcp(Request $request, Agent $agent)
+    {
+        $this->authorizeAgent($agent);
+        $data = $request->validate([
+            'name'        => 'required|string|max:80',
+            'url'         => 'required|url|max:500',
+            'auth_token'  => 'nullable|string|max:2000',
+        ]);
+
+        if ($agent->mcpServers()->count() >= 10) {
+            return back()->withErrors(['mcp' => 'Maksimal MCP serverlar soniga yetdingiz (10).']);
+        }
+
+        $server = new AgentMcpServer([
+            'agent_id'  => $agent->id,
+            'name'      => $data['name'],
+            'url'       => $data['url'],
+            'transport' => 'http',
+            'enabled'   => true,
+            'status'    => 'unknown',
+        ]);
+        if (!empty($data['auth_token'])) {
+            $token = trim($data['auth_token']);
+            $server->setHeaders(['Authorization' => str_starts_with($token, 'Bearer ') ? $token : "Bearer {$token}"]);
+        }
+        $server->agent()->associate($agent);
+        $server->save();
+
+        $res = $this->discoverMcp($server);
+        return $res['ok']
+            ? back()->with('success', "MCP ulandi: {$server->name} · {$res['count']} tool topildi.")
+            : back()->with('warning', "MCP saqlandi, lekin ulanmadi: {$res['error']}");
+    }
+
+    public function testMcp(Agent $agent, AgentMcpServer $mcp)
+    {
+        $this->authorizeAgent($agent);
+        abort_unless($mcp->agent_id === $agent->id, 404);
+
+        $res = $this->discoverMcp($mcp);
+        return $res['ok']
+            ? back()->with('success', "{$mcp->name}: {$res['count']} tool topildi.")
+            : back()->withErrors(['mcp' => "{$mcp->name}: {$res['error']}"]);
+    }
+
+    public function toggleMcp(Agent $agent, AgentMcpServer $mcp)
+    {
+        $this->authorizeAgent($agent);
+        abort_unless($mcp->agent_id === $agent->id, 404);
+        $mcp->update(['enabled' => !$mcp->enabled]);
+        return back()->with('success', $mcp->enabled ? 'MCP yoqildi.' : 'MCP o\'chirildi.');
+    }
+
+    public function deleteMcp(Agent $agent, AgentMcpServer $mcp)
+    {
+        $this->authorizeAgent($agent);
+        abort_unless($mcp->agent_id === $agent->id, 404);
+        $mcp->delete();
+        return back()->with('success', 'MCP server o\'chirildi.');
+    }
+
+    /** MCP serverга ulanib toollarni aniqlaydi va keshlaydi. */
+    protected function discoverMcp(AgentMcpServer $server): array
+    {
+        try {
+            $client = new McpClient($server->url, $server->getHeaders(), 20);
+            $client->initialize();
+            $tools = $client->listTools();
+
+            $clean = [];
+            foreach ($tools as $t) {
+                if (empty($t['name'])) continue;
+                $clean[] = [
+                    'name'        => $t['name'],
+                    'description' => $t['description'] ?? '',
+                    'inputSchema' => $t['inputSchema'] ?? ['type' => 'object', 'properties' => (object) []],
+                ];
+            }
+
+            $server->update([
+                'status'          => 'ok',
+                'tools'           => $clean,
+                'tools_count'     => count($clean),
+                'last_error'      => null,
+                'last_checked_at' => now(),
+            ]);
+            return ['ok' => true, 'count' => count($clean)];
+        } catch (\Throwable $e) {
+            $server->update([
+                'status'          => 'error',
+                'last_error'      => mb_substr($e->getMessage(), 0, 300),
+                'last_checked_at' => now(),
+            ]);
+            return ['ok' => false, 'error' => mb_substr($e->getMessage(), 0, 200)];
+        }
     }
 
     protected function webhookUrl(AgentChannel $channel): string

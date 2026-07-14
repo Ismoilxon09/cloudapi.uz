@@ -139,6 +139,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/{agent}/telegram/status', [\App\Http\Controllers\Dashboard\AgentController::class, 'telegramStatus'])->name('telegram.status');
         Route::post('/{agent}/telegram/reset', [\App\Http\Controllers\Dashboard\AgentController::class, 'resetWebhook'])->name('telegram.reset');
         Route::post('/{agent}/test', [\App\Http\Controllers\Dashboard\AgentController::class, 'testAgent'])->name('test');
+        // MCP serverlar
+        Route::post('/{agent}/mcp', [\App\Http\Controllers\Dashboard\AgentController::class, 'addMcp'])->name('mcp.add');
+        Route::post('/{agent}/mcp/{mcp}/test', [\App\Http\Controllers\Dashboard\AgentController::class, 'testMcp'])->name('mcp.test');
+        Route::post('/{agent}/mcp/{mcp}/toggle', [\App\Http\Controllers\Dashboard\AgentController::class, 'toggleMcp'])->name('mcp.toggle');
+        Route::delete('/{agent}/mcp/{mcp}', [\App\Http\Controllers\Dashboard\AgentController::class, 'deleteMcp'])->name('mcp.delete');
     });
 
     // Chat

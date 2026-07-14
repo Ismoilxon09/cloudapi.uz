@@ -29,6 +29,7 @@
   border-radius: var(--r-lg); padding: 20px; margin-bottom: 18px;
 }
 .help { font-size: 11.5px; color: var(--text-subtle); margin-top: 6px; line-height: 1.5; }
+.mcp-item { border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
 .range-row { display: flex; align-items: center; gap: 14px; }
 .range-row input[type=range] { flex: 1; accent-color: var(--accent); }
 .range-val {
@@ -286,6 +287,65 @@
         </div>
 
         @unless($isNew)
+        {{-- MCP toollar (asosiy formadan tashqarida — nested emas) --}}
+        <div class="side-card">
+          <div class="section-title" style="margin-bottom:4px;">MCP toollar</div>
+          <div class="section-hint" style="margin-bottom:14px;">Tashqi tool serverlarini (Model Context Protocol) ulang — agent ularni ishlata oladi.</div>
+
+          @forelse($agent->mcpServers as $s)
+            <div class="mcp-item" style="{{ $s->enabled ? '' : 'opacity:.5;' }}">
+              <div class="flex justify-between items-center" style="gap:8px;">
+                <div style="min-width:0;">
+                  <div style="font-weight:700;font-size:13px;color:var(--text-strong);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $s->name }}</div>
+                  <div style="font-size:11px;color:var(--text-subtle);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $s->url }}</div>
+                </div>
+                @if($s->status === 'ok')
+                  <span class="badge badge-success" style="flex-shrink:0;">{{ $s->tools_count }} tool</span>
+                @elseif($s->status === 'error')
+                  <span class="badge badge-danger" style="flex-shrink:0;">xato</span>
+                @else
+                  <span class="badge" style="flex-shrink:0;">?</span>
+                @endif
+              </div>
+              @if($s->status === 'error' && $s->last_error)
+                <div style="font-size:11px;color:var(--danger);margin-top:6px;line-height:1.4;">{{ $s->last_error }}</div>
+              @elseif($s->status === 'ok' && $s->tools)
+                <div style="font-size:11px;color:var(--text-muted);margin-top:6px;line-height:1.4;">{{ collect($s->tools)->pluck('name')->take(8)->implode(', ') }}</div>
+              @endif
+              <div class="flex gap-2" style="margin-top:10px;">
+                <form method="POST" action="{{ route('agents.mcp.test', [$agent, $s]) }}" style="flex:1;">
+                  @csrf
+                  <button class="btn btn-secondary btn-sm w-full"><span class="material-icons-round">sync</span> Test</button>
+                </form>
+                <form method="POST" action="{{ route('agents.mcp.toggle', [$agent, $s]) }}">
+                  @csrf
+                  <button class="btn btn-ghost btn-sm" title="{{ $s->enabled ? 'O\'chirish' : 'Yoqish' }}">
+                    <span class="material-icons-round">{{ $s->enabled ? 'toggle_on' : 'toggle_off' }}</span>
+                  </button>
+                </form>
+                <form method="POST" action="{{ route('agents.mcp.delete', [$agent, $s]) }}" onsubmit="return confirm('MCP server o\'chirilsinmi?')">
+                  @csrf @method('DELETE')
+                  <button class="btn btn-ghost btn-sm" title="O'chirish"><span class="material-icons-round">delete_outline</span></button>
+                </form>
+              </div>
+            </div>
+          @empty
+            <div class="text-muted" style="font-size:12px;margin-bottom:12px;">Hali MCP server ulanmagan.</div>
+          @endforelse
+
+          <form method="POST" action="{{ route('agents.mcp.add', $agent) }}"
+                style="margin-top:8px;border-top:1px solid var(--border);padding-top:12px;">
+            @csrf
+            <input type="text" name="name" class="input" placeholder="Nom (masalan: Ob-havo)"
+                   style="margin-bottom:8px;" value="{{ old('name') }}">
+            <input type="url" name="url" class="input mono" placeholder="https://mcp-server.../mcp"
+                   style="margin-bottom:8px;font-size:12px;" value="{{ old('url') }}">
+            <input type="text" name="auth_token" class="input mono" placeholder="Bearer token (ixtiyoriy)"
+                   autocomplete="off" style="margin-bottom:8px;font-size:12px;">
+            <button class="btn btn-primary btn-sm w-full"><span class="material-icons-round">add_link</span> MCP qo'shish</button>
+          </form>
+        </div>
+
         {{-- Sinash — egaga aniq javob/xatoni ko'rsatadi (webhookdagi umumiy xato o'rniga) --}}
         <div class="side-card" id="agentTest" data-url="{{ route('agents.test', $agent) }}">
           <div class="section-title" style="margin-bottom:12px;">Sinash</div>

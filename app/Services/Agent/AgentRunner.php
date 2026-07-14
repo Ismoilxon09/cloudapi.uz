@@ -8,6 +8,7 @@ use App\Models\AgentMessage;
 use App\Models\AiModel;
 use App\Models\Transaction;
 use App\Models\Wallet;
+use App\Services\Agent\Mcp\McpClient;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -68,41 +69,82 @@ class AgentRunner
         // 5. User xabarini saqlash
         $this->storeMessage($conversation, $agent, 'user', $userText);
 
-        // 6. Model chaqiruvi
-        $started = microtime(true);
-        $result = $this->callModel($model, $messages, (float) $agent->temperature, $agent->max_tokens);
+        // 6. MCP toollar (yoqilgan serverlardan)
+        [$tools, $toolMap] = $this->gatherTools($agent);
+
+        // 7. Model chaqiruvi — tool-calling sikli
+        $started    = microtime(true);
+        $clients    = [];        // serverId => McpClient (sikl davomida qayta ishlatiladi)
+        $toolRounds = $tools ? 4 : 0;
+        $totalCost  = 0.0;
+        $tokIn = 0; $tokOut = 0;
+        $content = '';
+        $toolTrace = [];
+
+        for ($i = 0; $i <= $toolRounds; $i++) {
+            $useTools = $tools && $i < $toolRounds; // oxirgi qadamda tool bermaymiz — matn javob majburiy
+            $result = $this->callModel(
+                $model, $messages, (float) $agent->temperature, $agent->max_tokens,
+                $useTools ? $tools : []
+            );
+
+            if (!($result['success'] ?? false)) {
+                Log::warning('AgentRunner model call failed', [
+                    'agent_id' => $agent->id, 'model' => $model->model_id, 'error' => $result['error'] ?? '?',
+                ]);
+                return ['success' => false, 'error' => $result['error'] ?? 'model_error'];
+            }
+
+            $totalCost += $this->computeCost($model, $result);
+            $tokIn  += (int) ($result['tokens_input'] ?? 0);
+            $tokOut += (int) ($result['tokens_output'] ?? 0);
+
+            $toolCalls = $result['tool_calls'] ?? [];
+            if (!$useTools || empty($toolCalls)) {
+                $content = trim((string) ($result['content'] ?? ''));
+                break;
+            }
+
+            // Model tool chaqirdi — bajarib, natijani qaytaramiz
+            $messages[] = [
+                'role'       => 'assistant',
+                'content'    => $result['content'] ?: null,
+                'tool_calls' => $toolCalls,
+            ];
+            foreach ($toolCalls as $tc) {
+                $fn   = $tc['function']['name'] ?? '';
+                $args = json_decode($tc['function']['arguments'] ?? '{}', true) ?: [];
+                $out  = $this->execTool($toolMap, $clients, $fn, $args, $agent);
+                $toolTrace[] = ['tool' => $fn, 'ok' => !str_starts_with($out, 'ERROR:')];
+                $messages[] = [
+                    'role'         => 'tool',
+                    'tool_call_id' => $tc['id'] ?? '',
+                    'content'      => $out,
+                ];
+            }
+        }
+
         $latencyMs = (int) round((microtime(true) - $started) * 1000);
-
-        if (!($result['success'] ?? false)) {
-            Log::warning('AgentRunner model call failed', [
-                'agent_id' => $agent->id, 'model' => $model->model_id, 'error' => $result['error'] ?? '?',
-            ]);
-            return ['success' => false, 'error' => $result['error'] ?? 'model_error'];
-        }
-
-        $content = trim((string) ($result['content'] ?? ''));
         if ($content === '') {
-            return ['success' => false, 'error' => 'empty_reply'];
+            $content = 'Kechirasiz, javobni shakllantira olmadim.';
         }
 
-        // 7. Xarajat — OpenRouter real cost bo'lsa uni ishlatamiz
-        $costUzs = $this->computeCost($model, $result);
-
-        // 8. Billing + agent hisoblagichlari (bitta tranzaksiya ichida)
-        if ($costUzs > 0) {
-            $this->deductFromWallet($owner->id, $wallet, $costUzs, $agent, $model);
+        // 8. Billing (butun sikl) + agent hisoblagichlari
+        if ($totalCost > 0) {
+            $this->deductFromWallet($owner->id, $wallet, $totalCost, $agent, $model);
         }
-        $agent->recordSpend($costUzs);
+        $agent->recordSpend($totalCost);
         $agent->total_replies = (int) $agent->total_replies + 1;
         $agent->save();
 
         // 9. Assistant xabarini saqlash
         $this->storeMessage($conversation, $agent, 'assistant', $content, [
             'model_id'      => $model->model_id,
-            'tokens_input'  => $result['tokens_input'] ?? 0,
-            'tokens_output' => $result['tokens_output'] ?? 0,
-            'cost_uzs'      => $costUzs,
+            'tokens_input'  => $tokIn,
+            'tokens_output' => $tokOut,
+            'cost_uzs'      => $totalCost,
             'latency_ms'    => $latencyMs,
+            'meta'          => $toolTrace ? ['tools' => $toolTrace] : null,
         ]);
 
         $conversation->last_message_at = now();
@@ -111,10 +153,11 @@ class AgentRunner
         return [
             'success'       => true,
             'content'       => $content,
-            'cost_uzs'      => $costUzs,
-            'tokens_input'  => $result['tokens_input'] ?? 0,
-            'tokens_output' => $result['tokens_output'] ?? 0,
+            'cost_uzs'      => $totalCost,
+            'tokens_input'  => $tokIn,
+            'tokens_output' => $tokOut,
             'model'         => $model->model_id,
+            'tools_used'    => $toolTrace,
         ];
     }
 
@@ -167,8 +210,77 @@ class AgentRunner
         return $msg;
     }
 
-    /** Non-streaming model chaqiruvi (OpenRouter/Groq, OpenAI-compat). */
-    protected function callModel(AiModel $model, array $messages, float $temperature, ?int $maxTokens): array
+    // === MCP tools ===
+
+    /**
+     * Yoqilgan MCP serverlaridan (kesh keshlangan) toollarni OpenAI function formatiga
+     * yig'adi. Qaytaradi: [tools[], functionName => [server, origName]].
+     */
+    protected function gatherTools(Agent $agent): array
+    {
+        $servers = $agent->mcpServers()->where('enabled', true)->where('status', 'ok')->get();
+        $tools = [];
+        $map = [];
+
+        foreach ($servers as $server) {
+            foreach (($server->tools ?? []) as $t) {
+                $name = $t['name'] ?? null;
+                if (!$name) continue;
+
+                $fn = $this->uniqueFnName($name, $map);
+                $map[$fn] = [$server, $name];
+                $tools[] = [
+                    'type' => 'function',
+                    'function' => [
+                        'name'        => $fn,
+                        'description' => mb_substr((string) ($t['description'] ?? $name), 0, 1000),
+                        'parameters'  => $t['inputSchema'] ?? ['type' => 'object', 'properties' => (object) []],
+                    ],
+                ];
+            }
+        }
+
+        return [$tools, $map];
+    }
+
+    /** Model uchun yaroqli, takrorlanmas function nomi ([a-zA-Z0-9_-], ≤64). */
+    protected function uniqueFnName(string $name, array $map): string
+    {
+        $base = preg_replace('/[^a-zA-Z0-9_-]/', '_', $name);
+        $base = mb_substr(trim($base, '_') ?: 'tool', 0, 60);
+        $fn = $base;
+        $i = 1;
+        while (isset($map[$fn])) {
+            $fn = $base . '_' . (++$i);
+        }
+        return $fn;
+    }
+
+    /** Bitta tool chaqiruvini MCP server orqali bajarish (klientlar sikl davomida keshlanadi). */
+    protected function execTool(array $toolMap, array &$clients, string $fnName, array $args, Agent $agent): string
+    {
+        if (!isset($toolMap[$fnName])) {
+            return 'ERROR: noma\'lum tool';
+        }
+        [$server, $origName] = $toolMap[$fnName];
+
+        try {
+            if (!isset($clients[$server->id])) {
+                $client = new McpClient($server->url, $server->getHeaders());
+                $client->initialize();
+                $clients[$server->id] = $client;
+            }
+            return $clients[$server->id]->callTool($origName, $args);
+        } catch (\Throwable $e) {
+            Log::warning('MCP tool call failed', [
+                'agent_id' => $agent->id, 'server' => $server->id, 'tool' => $origName, 'error' => $e->getMessage(),
+            ]);
+            return 'ERROR: ' . $e->getMessage();
+        }
+    }
+
+    /** Non-streaming model chaqiruvi (OpenRouter/Groq, OpenAI-compat). Tools ixtiyoriy. */
+    protected function callModel(AiModel $model, array $messages, float $temperature, ?int $maxTokens, array $tools = []): array
     {
         try {
             $provider = $model->provider ?? 'openrouter';
@@ -181,6 +293,10 @@ class AgentRunner
                 'stream'      => false,
             ];
             if ($maxTokens) $payload['max_tokens'] = $maxTokens;
+            if ($tools) {
+                $payload['tools'] = $tools;
+                $payload['tool_choice'] = 'auto';
+            }
             // OpenRouter'dan real xarajatni so'rash
             if ($provider !== 'groq') {
                 $payload['usage'] = ['include' => true];
@@ -216,6 +332,7 @@ class AgentRunner
             return [
                 'success'       => true,
                 'content'       => $choice['message']['content'] ?? '',
+                'tool_calls'    => $choice['message']['tool_calls'] ?? [],
                 'finish_reason' => $choice['finish_reason'] ?? 'stop',
                 'tokens_input'  => $data['usage']['prompt_tokens'] ?? 0,
                 'tokens_output' => $data['usage']['completion_tokens'] ?? 0,

@@ -38,6 +38,7 @@ class Agent extends Model
     public function channels(): HasMany { return $this->hasMany(AgentChannel::class); }
     public function conversations(): HasMany { return $this->hasMany(AgentConversation::class); }
     public function messages(): HasMany { return $this->hasMany(AgentMessage::class); }
+    public function mcpServers(): HasMany { return $this->hasMany(AgentMcpServer::class); }
 
     public function telegramChannel(): HasOne
     {

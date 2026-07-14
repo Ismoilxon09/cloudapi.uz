@@ -72,7 +72,7 @@ class AgentController extends Controller
         $this->authorizeAgent($agent);
 
         return view('dashboard.agents.edit', [
-            'agent'  => $agent->load('telegramChannel', 'mcpServers'),
+            'agent'  => $agent->load('telegramChannel', 'apiChannel', 'webChannel', 'mcpServers'),
             'models' => $this->modelOptions(),
             'isNew'  => false,
         ]);
@@ -368,6 +368,69 @@ class AgentController extends Controller
             ]);
             return ['ok' => false, 'error' => mb_substr($e->getMessage(), 0, 200)];
         }
+    }
+
+    // === API kanal ===
+
+    public function generateApiKey(Agent $agent)
+    {
+        $this->authorizeAgent($agent);
+
+        $channel = $agent->apiChannel ?? new AgentChannel(['agent_id' => $agent->id, 'type' => 'api']);
+        $key = AgentChannel::newApiKey();
+        $channel->setApiKey($key);
+        $channel->status = 'active';
+        $channel->connected_at = now();
+        $channel->agent()->associate($agent);
+        $channel->save();
+
+        if ($agent->status === 'draft') $agent->update(['status' => 'active']);
+
+        return back()
+            ->with('success', 'API kaliti yaratildi. Uni hoziroq saqlang — qayta ko\'rsatilmaydi.')
+            ->with('new_api_key', $key);
+    }
+
+    public function revokeApi(Agent $agent)
+    {
+        $this->authorizeAgent($agent);
+        $agent->apiChannel?->delete();
+        return back()->with('success', 'API o\'chirildi.');
+    }
+
+    // === Web widget kanal ===
+
+    public function saveWidget(Request $request, Agent $agent)
+    {
+        $this->authorizeAgent($agent);
+        $data = $request->validate([
+            'accent'          => 'nullable|string|max:9',
+            'allowed_origins' => 'nullable|string|max:2000',
+        ]);
+
+        $origins = collect(preg_split('/[\s,]+/', (string) ($data['allowed_origins'] ?? '')))
+            ->filter()->values()->all();
+
+        $channel = $agent->webChannel ?? new AgentChannel(['agent_id' => $agent->id, 'type' => 'web']);
+        $channel->status = 'active';
+        $channel->connected_at = now();
+        $channel->config = array_merge($channel->config ?? [], [
+            'accent'          => $data['accent'] ?: '#111111',
+            'allowed_origins' => $origins,
+        ]);
+        $channel->agent()->associate($agent);
+        $channel->save();
+
+        if ($agent->status === 'draft') $agent->update(['status' => 'active']);
+
+        return back()->with('success', 'Web widget yoqildi.');
+    }
+
+    public function disableWidget(Agent $agent)
+    {
+        $this->authorizeAgent($agent);
+        $agent->webChannel?->delete();
+        return back()->with('success', 'Web widget o\'chirildi.');
     }
 
     protected function webhookUrl(AgentChannel $channel): string

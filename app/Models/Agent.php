@@ -45,6 +45,16 @@ class Agent extends Model
         return $this->hasOne(AgentChannel::class)->where('type', 'telegram');
     }
 
+    public function apiChannel(): HasOne
+    {
+        return $this->hasOne(AgentChannel::class)->where('type', 'api');
+    }
+
+    public function webChannel(): HasOne
+    {
+        return $this->hasOne(AgentChannel::class)->where('type', 'web');
+    }
+
     // === Scopes ===
     public function scopeActive($q) { return $q->where('status', 'active'); }
 

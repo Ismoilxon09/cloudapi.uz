@@ -346,6 +346,80 @@
           </form>
         </div>
 
+        {{-- API kanal --}}
+        <div class="side-card">
+          <div class="section-title" style="margin-bottom:4px;">API</div>
+          <div class="section-hint" style="margin-bottom:14px;">Boshqa ilovalar agentga so'rov yuborishi uchun.</div>
+
+          @if(session('new_api_key'))
+            <div class="alert alert-success" style="font-size:11px;word-break:break-all;margin-bottom:12px;">
+              <span class="material-icons-round">vpn_key</span>
+              <div>Kalitni hoziroq saqlang (qayta ko'rsatilmaydi):<br><b>{{ session('new_api_key') }}</b></div>
+            </div>
+          @endif
+
+          @if($agent->apiChannel && $agent->apiChannel->isActive())
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">
+              Kalit: <code>{{ $agent->apiChannel->config['api_key_prefix'] ?? '' }}…</code>
+            </div>
+            @php $chatUrl = rtrim(config('app.url'),'/').'/api/agent/'.$agent->slug.'/chat'; @endphp
+            <div class="mono-box" data-copy="{{ $chatUrl }}" title="Nusxa olish" style="cursor:pointer;">POST {{ $chatUrl }}</div>
+            <div class="mono-box" style="margin-top:8px;white-space:pre-wrap;">curl -X POST {{ $chatUrl }} \
+ -H "Authorization: Bearer KALIT" \
+ -H "Content-Type: application/json" \
+ -d '{"message":"Salom"}'</div>
+            <div class="flex gap-2" style="margin-top:10px;">
+              <form method="POST" action="{{ route('agents.api.key', $agent) }}" style="flex:1;">
+                @csrf
+                <button class="btn btn-secondary btn-sm w-full"><span class="material-icons-round">autorenew</span> Yangilash</button>
+              </form>
+              <form method="POST" action="{{ route('agents.api.revoke', $agent) }}" onsubmit="return confirm('API o\'chirilsinmi?')">
+                @csrf @method('DELETE')
+                <button class="btn btn-ghost btn-sm" title="O'chirish"><span class="material-icons-round">link_off</span></button>
+              </form>
+            </div>
+          @else
+            <form method="POST" action="{{ route('agents.api.key', $agent) }}">
+              @csrf
+              <button class="btn btn-primary btn-sm w-full"><span class="material-icons-round">vpn_key</span> API kalitini yaratish</button>
+            </form>
+          @endif
+        </div>
+
+        {{-- Web widget --}}
+        <div class="side-card">
+          <div class="section-title" style="margin-bottom:4px;">Web widget</div>
+          <div class="section-hint" style="margin-bottom:14px;">Saytingizga suzuvchi chat oynasini joylang.</div>
+
+          @php $webCh = $agent->webChannel; @endphp
+          @if($webCh && $webCh->isActive())
+            @php $embed = '<script src="'.rtrim(config('app.url'),'/').'/agent/'.$agent->slug.'/widget.js" async></'.'script>'; @endphp
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">Embed kodi (saytga qo'ying):</div>
+            <div class="mono-box" data-copy="{{ $embed }}" title="Nusxa olish" style="cursor:pointer;">{{ $embed }}</div>
+
+            <form method="POST" action="{{ route('agents.widget.save', $agent) }}" style="margin-top:12px;">
+              @csrf
+              <label class="label">Rang</label>
+              <input type="text" name="accent" class="input mono" style="margin-bottom:8px;" value="{{ $webCh->config['accent'] ?? '#111111' }}">
+              <label class="label">Ruxsat etilgan domenlar (ixtiyoriy, bo'sh = barchasi)</label>
+              <textarea name="allowed_origins" class="textarea" rows="2" style="font-size:12px;" placeholder="example.com, shop.example.com">{{ implode(', ', $webCh->config['allowed_origins'] ?? []) }}</textarea>
+              <button class="btn btn-secondary btn-sm w-full" style="margin-top:10px;"><span class="material-icons-round">save</span> Saqlash</button>
+            </form>
+            <form method="POST" action="{{ route('agents.widget.disable', $agent) }}" style="margin-top:8px;"
+                  onsubmit="return confirm('Widget o\'chirilsinmi?')">
+              @csrf @method('DELETE')
+              <button class="btn btn-ghost btn-sm w-full"><span class="material-icons-round">visibility_off</span> Widgetni o'chirish</button>
+            </form>
+          @else
+            <form method="POST" action="{{ route('agents.widget.save', $agent) }}">
+              @csrf
+              <label class="label">Rang</label>
+              <input type="text" name="accent" class="input mono" style="margin-bottom:10px;" value="#111111">
+              <button class="btn btn-primary btn-sm w-full"><span class="material-icons-round">code</span> Widgetni yoqish</button>
+            </form>
+          @endif
+        </div>
+
         {{-- Sinash — egaga aniq javob/xatoni ko'rsatadi (webhookdagi umumiy xato o'rniga) --}}
         <div class="side-card" id="agentTest" data-url="{{ route('agents.test', $agent) }}">
           <div class="section-title" style="margin-bottom:12px;">Sinash</div>
@@ -423,6 +497,16 @@
     if (btn) btn.addEventListener('click', load);
     load();
   }
+
+  // Nusxa olish (data-copy)
+  document.querySelectorAll('[data-copy]').forEach(function(el){
+    el.addEventListener('click', function(){
+      var text = el.getAttribute('data-copy');
+      var done = function(){ var o=el.style.borderColor; el.style.borderColor='var(--success)'; setTimeout(function(){ el.style.borderColor=o; }, 700); };
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, function(){});
+      else { var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} ta.remove(); done(); }
+    });
+  });
 
   // Agent sinovi — egaga aniq javob/xatoni ko'rsatadi
   var test = document.getElementById('agentTest');

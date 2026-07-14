@@ -45,4 +45,24 @@ class AgentChannel extends Model
     {
         return Str::random(48);
     }
+
+    // === API kalit ('api' kanal uchun; hash saqlanadi, to'liq kalit faqat bir marta ko'rsatiladi) ===
+    public static function newApiKey(): string
+    {
+        return 'agtk_' . Str::random(40);
+    }
+
+    public function setApiKey(string $key): void
+    {
+        $config = $this->config ?? [];
+        $config['api_key_hash']   = hash('sha256', $key);
+        $config['api_key_prefix'] = substr($key, 0, 12);
+        $this->config = $config;
+    }
+
+    public function matchesApiKey(string $key): bool
+    {
+        $hash = $this->config['api_key_hash'] ?? null;
+        return $hash !== null && hash_equals($hash, hash('sha256', $key));
+    }
 }

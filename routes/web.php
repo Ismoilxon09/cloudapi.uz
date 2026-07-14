@@ -64,6 +64,20 @@ Route::post('/api/agent/webhook/{secret}', [\App\Http\Controllers\Bot\AgentBotWe
     ->name('agent.webhook')
     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
+// Agent public API (server-to-server, kalit bilan) + web widget
+Route::post('/api/agent/{slug}/chat', [\App\Http\Controllers\Api\AgentApiController::class, 'chat'])
+    ->name('agent.api.chat')
+    ->middleware('throttle:60,1')
+    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+Route::get('/agent/{slug}/widget.js', [\App\Http\Controllers\Api\AgentApiController::class, 'widgetJs'])
+    ->name('agent.widget.js');
+Route::post('/api/agent/{slug}/widget', [\App\Http\Controllers\Api\AgentApiController::class, 'widgetMessage'])
+    ->name('agent.widget.message')
+    ->middleware('throttle:40,1')
+    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+Route::options('/api/agent/{slug}/widget', [\App\Http\Controllers\Api\AgentApiController::class, 'widgetPreflight'])
+    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
 // Email verification (logged in users)
 Route::middleware('auth')->group(function () {
     Route::get('/verify-email', [\App\Http\Controllers\Auth\EmailVerificationController::class, 'show'])->name('verification.notice');
@@ -144,7 +158,16 @@ Route::middleware('auth')->group(function () {
         Route::post('/{agent}/mcp/{mcp}/test', [\App\Http\Controllers\Dashboard\AgentController::class, 'testMcp'])->name('mcp.test');
         Route::post('/{agent}/mcp/{mcp}/toggle', [\App\Http\Controllers\Dashboard\AgentController::class, 'toggleMcp'])->name('mcp.toggle');
         Route::delete('/{agent}/mcp/{mcp}', [\App\Http\Controllers\Dashboard\AgentController::class, 'deleteMcp'])->name('mcp.delete');
+        // API kanal + web widget
+        Route::post('/{agent}/api-key', [\App\Http\Controllers\Dashboard\AgentController::class, 'generateApiKey'])->name('api.key');
+        Route::delete('/{agent}/api-key', [\App\Http\Controllers\Dashboard\AgentController::class, 'revokeApi'])->name('api.revoke');
+        Route::post('/{agent}/widget', [\App\Http\Controllers\Dashboard\AgentController::class, 'saveWidget'])->name('widget.save');
+        Route::delete('/{agent}/widget', [\App\Http\Controllers\Dashboard\AgentController::class, 'disableWidget'])->name('widget.disable');
     });
+
+    // Vantage — observability hub
+    Route::get('/dashboard/vantage', [\App\Http\Controllers\Dashboard\VantageController::class, 'index'])->name('vantage.index');
+    Route::get('/dashboard/vantage/stream', [\App\Http\Controllers\Dashboard\VantageController::class, 'stream'])->name('vantage.stream');
 
     // Chat
     Route::prefix('dashboard/chat')->name('dashboard.chat.')->group(function () {

@@ -102,6 +102,20 @@ class User extends Authenticatable
     {
         return $this->status === 'blocked';
     }
+
+    /** Agent platformasi (Agentlar, Vantage) uchun minimal balans (so'm). */
+    public static function agentAccessMin(): float
+    {
+        return (float) \App\Models\SystemSetting::get('agents_min_balance_uzs', 10000);
+    }
+
+    /** Agent funksiyalaridan foydalanish uchun yetarli real balans bormi. */
+    public function hasAgentAccess(): bool
+    {
+        if ($this->isAdmin()) return true; // adminlar cheklovsiz
+        $balance = (float) ($this->wallet->balance_uzs ?? 0);
+        return $balance >= self::agentAccessMin();
+    }
     public function tickets()
     {
         return $this->hasMany(\App\Models\Ticket::class);

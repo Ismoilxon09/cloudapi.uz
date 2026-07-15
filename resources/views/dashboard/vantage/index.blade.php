@@ -55,7 +55,12 @@
       </div>
       <div class="page-subtitle">CloudAPI orqali o'tayotgan barcha AI faoliyatini jonli kuzating.</div>
     </div>
-    <div class="vtg-live"><span class="vtg-dot"></span> Jonli · <span id="vtgClock">hozir</span></div>
+    <div class="flex items-center gap-3">
+      <a href="{{ route('vantage.town') }}" class="btn btn-primary">
+        <span class="material-icons-round">hub</span> AI Town
+      </a>
+      <div class="vtg-live"><span class="vtg-dot"></span> Jonli · <span id="vtgClock">hozir</span></div>
+    </div>
   </div>
 
   {{-- KPI --}}

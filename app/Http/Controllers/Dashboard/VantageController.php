@@ -19,6 +19,20 @@ class VantageController extends Controller
         return view('dashboard.vantage.index', $this->snapshot());
     }
 
+    /** AI Town — jonli spatial vizualizatsiya. */
+    public function town()
+    {
+        $agents = Auth::user()->agents()->where('status', 'active')->get(['id', 'name', 'behavior_preset', 'model_slug']);
+        $s = $this->snapshot();
+
+        return view('dashboard.vantage.town', [
+            'agents'    => $agents,
+            'kpis'      => $s['kpis'],
+            'recent'    => $s['recent'],
+            'topModels' => $s['topModels'],
+        ]);
+    }
+
     /** Jonli yangilanish uchun JSON. */
     public function stream()
     {

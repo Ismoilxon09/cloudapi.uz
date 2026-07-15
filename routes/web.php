@@ -139,8 +139,10 @@ Route::middleware('auth')->group(function () {
     // Media kutubxonasi (yaratilgan rasm/video/audio)
     Route::get('/dashboard/media', [\App\Http\Controllers\Dashboard\MediaController::class, 'index'])->name('media.index');
 
-    // AI Agentlar (builder)
-    Route::prefix('dashboard/agents')->name('agents.')->group(function () {
+    // AI Agentlar (builder) — minimal balans talab qilinadi
+    Route::prefix('dashboard/agents')->name('agents.')
+        ->middleware(\App\Http\Middleware\RequireAgentAccess::class)
+        ->group(function () {
         Route::get('/', [\App\Http\Controllers\Dashboard\AgentController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\Dashboard\AgentController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\Dashboard\AgentController::class, 'store'])->name('store');
@@ -165,9 +167,12 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{agent}/widget', [\App\Http\Controllers\Dashboard\AgentController::class, 'disableWidget'])->name('widget.disable');
     });
 
-    // Vantage — observability hub
-    Route::get('/dashboard/vantage', [\App\Http\Controllers\Dashboard\VantageController::class, 'index'])->name('vantage.index');
-    Route::get('/dashboard/vantage/stream', [\App\Http\Controllers\Dashboard\VantageController::class, 'stream'])->name('vantage.stream');
+    // Vantage — observability hub (minimal balans talab qilinadi)
+    Route::middleware(\App\Http\Middleware\RequireAgentAccess::class)->group(function () {
+        Route::get('/dashboard/vantage', [\App\Http\Controllers\Dashboard\VantageController::class, 'index'])->name('vantage.index');
+        Route::get('/dashboard/vantage/town', [\App\Http\Controllers\Dashboard\VantageController::class, 'town'])->name('vantage.town');
+        Route::get('/dashboard/vantage/stream', [\App\Http\Controllers\Dashboard\VantageController::class, 'stream'])->name('vantage.stream');
+    });
 
     // Chat
     Route::prefix('dashboard/chat')->name('dashboard.chat.')->group(function () {

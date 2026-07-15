@@ -201,6 +201,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/chat', [\App\Http\Controllers\Admin\ChatController::class, 'index'])->name('chat.index');
     Route::get('/chat/{sessionId}', [\App\Http\Controllers\Admin\ChatController::class, 'show'])->name('chat.show')->whereNumber('sessionId');
 
+    // AI Agentlar (nazorat & boshqaruv)
+    Route::get('/agents', [\App\Http\Controllers\Admin\AgentController::class, 'index'])->name('agents.index');
+    Route::get('/agents/{agent}', [\App\Http\Controllers\Admin\AgentController::class, 'show'])->name('agents.show')->whereNumber('agent');
+    Route::post('/agents/{agent}/toggle', [\App\Http\Controllers\Admin\AgentController::class, 'toggleStatus'])->name('agents.toggle');
+    Route::delete('/agents/{agent}', [\App\Http\Controllers\Admin\AgentController::class, 'destroy'])->name('agents.destroy');
+
+    // Vantage — platforma bo'yicha jonli kuzatuv
+    Route::get('/vantage', [\App\Http\Controllers\Admin\VantageController::class, 'index'])->name('vantage.index');
+    Route::get('/vantage/stream', [\App\Http\Controllers\Admin\VantageController::class, 'stream'])->name('vantage.stream');
+
     // Users
     Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
     Route::get('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'show'])->name('users.show');

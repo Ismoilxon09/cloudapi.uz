@@ -862,6 +862,7 @@
       <a href="#how" class="nav-link">{{ __('landing.nav.features') }}</a>
       <a href="#models" class="nav-link">{{ __('landing.nav.models') }}</a>
       <a href="#chat" class="nav-link">Chat</a>
+      <a href="#agents" class="nav-link">{{ app()->getLocale()==='ru' ? 'Агенты' : (app()->getLocale()==='en' ? 'Agents' : 'Agentlar') }}</a>
       <a href="{{ route('pricing') }}" class="nav-link">{{ __('landing.nav.pricing') }}</a>
       <a href="{{ route('docs') }}" class="nav-link">{{ __('landing.nav.docs') }}</a>
     </nav>
@@ -887,6 +888,7 @@
     <a href="#how" class="nav-mobile-link" onclick="closeMobileMenu()">{{ __('landing.nav.features') }}</a>
     <a href="#models" class="nav-mobile-link" onclick="closeMobileMenu()">{{ __('landing.nav.models') }}</a>
     <a href="#chat" class="nav-mobile-link" onclick="closeMobileMenu()">Chat</a>
+    <a href="#agents" class="nav-mobile-link" onclick="closeMobileMenu()">{{ app()->getLocale()==='ru' ? 'Агенты' : (app()->getLocale()==='en' ? 'Agents' : 'Agentlar') }}</a>
     <a href="{{ route('pricing') }}" class="nav-mobile-link">{{ __('landing.nav.pricing') }}</a>
     <a href="{{ route('docs') }}" class="nav-mobile-link">{{ __('landing.nav.docs') }}</a>
     <a href="#feedbacks" class="nav-mobile-link" onclick="closeMobileMenu()">Fikrlar</a>
@@ -1217,6 +1219,76 @@
   background: var(--bg-elevated); color: var(--text-strong); font-weight: 600; font-size: 14px;
 }
 .chat-cap .material-icons-round { font-size: 20px; color: var(--text-muted); }
+</style>
+
+<!-- ===== AI AGENTS HIGHLIGHT SECTION ===== -->
+@php
+  $__loc = app()->getLocale();
+  $__isRu = $__loc === 'ru'; $__isEn = $__loc === 'en';
+  $__ag = [
+    'eyebrow'  => $__isRu ? 'Новое' : ($__isEn ? 'New' : 'Yangi'),
+    'title'    => $__isRu ? 'Соберите своего AI-агента' : ($__isEn ? 'Build your own AI agent' : "O'z AI agentingizni yarating"),
+    'subtitle' => $__isRu
+        ? 'Без кода. Дайте характер, выберите модель и подключите к Telegram, сайту или API.'
+        : ($__isEn
+            ? 'No code. Give it a persona, pick a model, and connect it to Telegram, your site, or an API.'
+            : "Kodsiz. Xarakter bering, model tanlang va Telegram, sayt yoki API'ga ulang."),
+    'cta'      => $__isRu ? 'Создать агента' : ($__isEn ? 'Create an agent' : 'Agent yaratish'),
+    'items'    => [
+      ['icon' => 'smart_toy', 'title' => $__isRu ? 'Конструктор агентов' : ($__isEn ? 'Agent builder' : 'Agent konstruktori'),
+        'desc' => $__isRu ? 'Имя, характер, промпт, модель — без кода.' : ($__isEn ? 'Name, persona, prompt, model — no code.' : 'Nom, xarakter, prompt, model — kodsiz.')],
+      ['icon' => 'send', 'title' => $__isRu ? 'Telegram-бот' : ($__isEn ? 'Telegram bot' : 'Telegram bot'),
+        'desc' => $__isRu ? 'Вставьте токен @BotFather — бот оживёт.' : ($__isEn ? 'Paste your @BotFather token — the bot comes alive.' : "@BotFather tokenini joylang — bot jonlanadi.")],
+      ['icon' => 'build', 'title' => $__isRu ? 'MCP-инструменты' : ($__isEn ? 'MCP tools' : 'MCP toollar'),
+        'desc' => $__isRu ? 'Подключите внешние инструменты и данные.' : ($__isEn ? 'Connect external tools and data sources.' : 'Tashqi tool va manbalarni ulang.')],
+      ['icon' => 'code', 'title' => $__isRu ? 'Виджет + API' : ($__isEn ? 'Widget + API' : 'Widget + API'),
+        'desc' => $__isRu ? 'Чат на сайт одним тегом или через API.' : ($__isEn ? 'Chat on your site with one snippet, or via API.' : "Saytga bitta snippet, yoki API orqali.")],
+      ['icon' => 'radar', 'title' => 'Vantage',
+        'desc' => $__isRu ? 'Живой мониторинг всей AI-активности.' : ($__isEn ? 'Live monitoring of all AI activity.' : 'Barcha AI faoliyatini jonli kuzatuv.')],
+      ['icon' => 'hub', 'title' => 'AI Town',
+        'desc' => $__isRu ? 'Ваши агенты живут как персонажи.' : ($__isEn ? 'Your agents live as characters.' : 'Agentlaringiz personaj bo\'lib yashaydi.')],
+    ],
+  ];
+@endphp
+<section class="section" id="agents">
+  <div class="section-header">
+    <div class="section-eyebrow">{{ $__ag['eyebrow'] }}</div>
+    <h2 class="section-title">{{ $__ag['title'] }}</h2>
+    <p class="section-subtitle">{{ $__ag['subtitle'] }}</p>
+  </div>
+
+  <div class="agents-promo-grid">
+    @foreach($__ag['items'] as $__it)
+      <div class="agents-promo-card" data-reveal>
+        <div class="agents-promo-icon"><span class="material-icons-round">{{ $__it['icon'] }}</span></div>
+        <div class="agents-promo-title">{{ $__it['title'] }}</div>
+        <div class="agents-promo-desc">{{ $__it['desc'] }}</div>
+      </div>
+    @endforeach
+  </div>
+
+  <div style="text-align:center;margin-top:32px;">
+    <a href="{{ route('agents.index') }}" class="btn btn-primary btn-lg">
+      <span class="material-icons-round" style="font-size:18px;vertical-align:-4px;margin-right:6px">smart_toy</span>{{ $__ag['cta'] }}
+    </a>
+  </div>
+</section>
+<style>
+.agents-promo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 1000px; margin: 0 auto; }
+@media (max-width: 860px) { .agents-promo-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .agents-promo-grid { grid-template-columns: 1fr; } }
+.agents-promo-card {
+  background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 16px; padding: 22px;
+  transition: transform .2s var(--ease), border-color .2s var(--ease), box-shadow .2s var(--ease);
+}
+.agents-promo-card:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: var(--shadow-md); }
+.agents-promo-icon {
+  width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  background: var(--text-strong); color: var(--bg-elevated); margin-bottom: 14px;
+}
+.agents-promo-icon .material-icons-round { font-size: 22px; }
+.agents-promo-title { font-size: 15px; font-weight: 700; color: var(--text-strong); margin-bottom: 6px; letter-spacing: -0.01em; }
+.agents-promo-desc { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
 </style>
 
 <!-- ===== FEEDBACKS SECTION ===== -->

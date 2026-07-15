@@ -415,7 +415,7 @@
           <div class="card-info-row">
             <span class="card-info-label">{{ __('billing.topup.card_number') }}</span>
             <span class="card-info-value">
-              <span id="cardNumber">8600 1234 5678 9012</span>
+              <span id="cardNumber">5614 6822 1633 5994</span>
               <button type="button" class="copy-btn" onclick="copyText('cardNumber', this)">
                 <span class="material-icons-round">content_copy</span>
               </button>
@@ -423,7 +423,7 @@
           </div>
           <div class="card-info-row">
             <span class="card-info-label">{{ __('billing.topup.card_holder') }}</span>
-            <span class="card-info-value">ISMOILXON NURMATOV</span>
+            <span class="card-info-value">ISMOILJON NURMATOV</span>
           </div>
         </div>
 

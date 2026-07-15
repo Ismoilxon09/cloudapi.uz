@@ -9,6 +9,8 @@ $navGroups = [
         'items' => [
             ['route' => 'admin.dashboard', 'icon' => 'space_dashboard', 'label' => 'Dashboard', 'pattern' => 'admin.dashboard'],
             ['route' => 'admin.chat.index', 'icon' => 'forum', 'label' => 'AI Chat', 'pattern' => 'admin.chat.*'],
+            ['route' => 'admin.agents.index', 'icon' => 'smart_toy', 'label' => 'AI Agentlar', 'pattern' => 'admin.agents.*'],
+            ['route' => 'admin.vantage.index', 'icon' => 'radar', 'label' => 'Vantage', 'pattern' => 'admin.vantage.*'],
             ['route' => 'admin.stats.index', 'icon' => 'analytics', 'label' => 'Statistika', 'pattern' => 'admin.stats.*'],
         ],
     ],

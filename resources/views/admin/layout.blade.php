@@ -530,11 +530,27 @@ body.admin-layout.sidebar-collapsed { padding-left: var(--sidebar-width-collapse
   .adm-pag-btn { min-width: 28px; height: 28px; font-size: 11px; }
 }
 
+/* Mobil menyu tugmasi — faqat kichik ekranlarda ko'rinadi */
+.adm-menu-btn { display: none; }
+.adm-backdrop {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, .45);
+  z-index: 45; opacity: 0; pointer-events: none; transition: opacity .25s var(--ease);
+}
+.adm-backdrop.show { opacity: 1; pointer-events: auto; }
+
 @media (max-width: 768px) {
   body.admin-layout { padding-left: 0; }
   body.admin-layout.sidebar-collapsed { padding-left: 0; }
-  .admin-sidebar { left: -260px; transition: left .25s; }
+  .admin-sidebar { left: -260px; width: 240px; transition: left .25s var(--ease); box-shadow: var(--shadow-lg); }
+  /* mobil rejimda "collapsed" holatini bekor qilamiz — to'liq menyu ochilsin */
+  .admin-sidebar.collapsed { width: 240px; }
+  .admin-sidebar.collapsed .adm-nav-text,
+  .admin-sidebar.collapsed .adm-nav-label,
+  .admin-sidebar.collapsed .adm-brand-text,
+  .admin-sidebar.collapsed .adm-nav-badge { opacity: 1; display: block; height: auto; }
   .admin-sidebar.mobile-open { left: 0; }
+  .adm-menu-btn { display: flex; }
+  .adm-collapse-btn { display: none; }
 }
 </style>
 
@@ -543,10 +559,14 @@ body.admin-layout.sidebar-collapsed { padding-left: var(--sidebar-width-collapse
 <body class="admin-layout">
 
 @include('admin.partials.sidebar')
+<div class="adm-backdrop" id="admBackdrop" onclick="closeMobileSidebar()"></div>
 
 <div class="admin-main">
   <!-- Header -->
   <header class="admin-header">
+    <button class="adm-h-btn adm-menu-btn" onclick="toggleMobileSidebar()" title="Menyu" aria-label="Menyu">
+      <span class="material-icons-round">menu</span>
+    </button>
     <div class="adm-h-title">@yield('page_title', 'Admin Panel')</div>
 
     <div class="adm-h-tools">
@@ -613,6 +633,22 @@ function toggleAdminSidebar() {
   document.body.classList.toggle('sidebar-collapsed', collapsed);
   localStorage.setItem('admin-sidebar-collapsed', collapsed ? '1' : '0');
 }
+
+// Mobil: sidebarni ochish/yopish
+function toggleMobileSidebar() {
+  document.getElementById('adminSidebar').classList.toggle('mobile-open');
+  document.getElementById('admBackdrop').classList.toggle('show');
+}
+function closeMobileSidebar() {
+  document.getElementById('adminSidebar').classList.remove('mobile-open');
+  document.getElementById('admBackdrop').classList.remove('show');
+}
+// Menyu bosilganda mobil sidebar yopilsin
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('#adminSidebar .adm-nav-item').forEach(function (a) {
+    a.addEventListener('click', function () { if (window.innerWidth <= 768) closeMobileSidebar(); });
+  });
+});
 
 (function() {
   if (localStorage.getItem('admin-sidebar-collapsed') === '1') {
